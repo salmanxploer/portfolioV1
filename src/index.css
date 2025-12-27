@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    /* Cyberpunk/Hacker Theme */
+    /* Cyberpunk/Hacker Theme with Color Accents */
     --background: 120 5% 4%;
     --foreground: 120 100% 50%;
 
@@ -37,9 +37,19 @@
 
     --radius: 0.5rem;
 
+    /* Color Accents */
+    --neon-cyan: 180 100% 50%;
+    --neon-purple: 280 100% 60%;
+    --neon-pink: 330 100% 60%;
+    --neon-blue: 220 100% 60%;
+    --neon-orange: 30 100% 50%;
+
     /* Custom Hacker Variables */
     --glow-primary: 0 0 20px hsl(120 100% 50% / 0.5), 0 0 40px hsl(120 100% 50% / 0.3);
     --glow-intense: 0 0 10px hsl(120 100% 50%), 0 0 20px hsl(120 100% 50%), 0 0 40px hsl(120 100% 50% / 0.5);
+    --glow-cyan: 0 0 20px hsl(180 100% 50% / 0.5), 0 0 40px hsl(180 100% 50% / 0.3);
+    --glow-purple: 0 0 20px hsl(280 100% 60% / 0.5), 0 0 40px hsl(280 100% 60% / 0.3);
+    --glow-pink: 0 0 20px hsl(330 100% 60% / 0.5), 0 0 40px hsl(330 100% 60% / 0.3);
     --text-shadow-glow: 0 0 10px hsl(120 100% 50% / 0.8), 0 0 20px hsl(120 100% 50% / 0.5);
 
     --sidebar-background: 120 5% 6%;
@@ -102,6 +112,56 @@
 
   .glow-intense {
     box-shadow: var(--glow-intense);
+  }
+
+  .glow-cyan {
+    box-shadow: var(--glow-cyan);
+  }
+
+  .glow-purple {
+    box-shadow: var(--glow-purple);
+  }
+
+  .glow-pink {
+    box-shadow: var(--glow-pink);
+  }
+
+  /* Colorful Gradient Orbs */
+  .gradient-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    animation: float-orb 8s ease-in-out infinite;
+  }
+
+  .gradient-orb-1 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, hsl(120 100% 50% / 0.3), hsl(180 100% 50% / 0.2));
+  }
+
+  .gradient-orb-2 {
+    width: 300px;
+    height: 300px;
+    background: linear-gradient(135deg, hsl(280 100% 60% / 0.3), hsl(330 100% 60% / 0.2));
+    animation-delay: -2s;
+  }
+
+  .gradient-orb-3 {
+    width: 350px;
+    height: 350px;
+    background: linear-gradient(135deg, hsl(180 100% 50% / 0.3), hsl(220 100% 60% / 0.2));
+    animation-delay: -4s;
+  }
+
+  /* Animated Background Mesh */
+  .mesh-gradient {
+    background: 
+      radial-gradient(at 20% 80%, hsl(120 100% 50% / 0.15) 0%, transparent 50%),
+      radial-gradient(at 80% 20%, hsl(280 100% 60% / 0.1) 0%, transparent 50%),
+      radial-gradient(at 40% 40%, hsl(180 100% 50% / 0.1) 0%, transparent 50%),
+      radial-gradient(at 60% 60%, hsl(330 100% 60% / 0.05) 0%, transparent 50%);
   }
 
   /* Glitch Effect */
@@ -218,6 +278,98 @@
     );
     pointer-events: none;
   }
+
+  /* Animated Border Gradient */
+  .border-gradient {
+    position: relative;
+    background: hsl(120 5% 8%);
+  }
+
+  .border-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, hsl(120 100% 50%), hsl(180 100% 50%), hsl(280 100% 60%), hsl(120 100% 50%));
+    background-size: 300% 300%;
+    animation: gradient-border 4s ease infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  /* Pulse Ring Animation */
+  .pulse-ring {
+    position: relative;
+  }
+
+  .pulse-ring::before,
+  .pulse-ring::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    border: 2px solid hsl(120 100% 50% / 0.3);
+    animation: pulse-ring-anim 2s ease-out infinite;
+  }
+
+  .pulse-ring::after {
+    animation-delay: 1s;
+  }
+
+  /* Floating Card Effect */
+  .float-card {
+    animation: float-card 6s ease-in-out infinite;
+  }
+
+  /* Text Gradient */
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(120 100% 50%), hsl(180 100% 50%), hsl(280 100% 60%));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-text 3s ease infinite;
+  }
+
+  /* Shimmer Effect */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(120 100% 50% / 0.2),
+      transparent
+    );
+    animation: shimmer 3s infinite;
+  }
+
+  /* Cyber Grid Background */
+  .cyber-grid {
+    background-image: 
+      linear-gradient(hsl(120 100% 50% / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(120 100% 50% / 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  /* Neon Line */
+  .neon-line {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(120 100% 50%), hsl(180 100% 50%), hsl(120 100% 50%), transparent);
+    animation: neon-flow 3s ease-in-out infinite;
+  }
 }
 
 @keyframes glitch-anim {
@@ -297,6 +449,30 @@
   50% { transform: translateY(-10px); }
 }
 
+@keyframes float-orb {
+  0%, 100% { 
+    transform: translateY(0) translateX(0) scale(1); 
+  }
+  25% { 
+    transform: translateY(-30px) translateX(20px) scale(1.1); 
+  }
+  50% { 
+    transform: translateY(-10px) translateX(-10px) scale(0.95); 
+  }
+  75% { 
+    transform: translateY(-20px) translateX(15px) scale(1.05); 
+  }
+}
+
+@keyframes float-card {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg); 
+  }
+  50% { 
+    transform: translateY(-8px) rotate(0.5deg); 
+  }
+}
+
 @keyframes pulse-glow {
   0%, 100% { 
     box-shadow: 0 0 5px hsl(120 100% 50% / 0.5), 0 0 10px hsl(120 100% 50% / 0.3);
@@ -306,7 +482,59 @@
   }
 }
 
+@keyframes pulse-ring-anim {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+@keyframes gradient-border {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes gradient-text {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes neon-flow {
+  0%, 100% { 
+    opacity: 0.5;
+    transform: scaleX(0.8);
+  }
+  50% { 
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
 @keyframes typing {
   from { width: 0; }
   to { width: 100%; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes pulse-scale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
