@@ -2,8 +2,22 @@ import type { Handler, HandlerEvent, HandlerContext } from "@netlify/functions";
 import { Resend } from 'resend';
 
 const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
+  // Check if API key exists
+  const apiKey = process.env.RESEND_API_KEY;
+  
+  if (!apiKey) {
+    return {
+      statusCode: 500,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ 
+        error: 'Server configuration error',
+        details: 'RESEND_API_KEY environment variable is not set in Netlify'
+      }),
+    };
+  }
+  
   // Initialize Resend inside the handler to ensure env vars are available
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const resend = new Resend(apiKey);
   
   // Handle CORS preflight
   if (event.httpMethod === 'OPTIONS') {
