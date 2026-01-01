@@ -51,6 +51,18 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       `,
     });
 
+    // Check if Resend returned an error
+    if (data.error) {
+      return {
+        statusCode: 400,
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ 
+          error: 'Resend API error',
+          details: data.error.message || JSON.stringify(data.error)
+        }),
+      };
+    }
+
     return {
       statusCode: 200,
       headers: { 'Access-Control-Allow-Origin': '*' },
@@ -63,7 +75,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ 
         error: 'Failed to send email',
-        details: error?.message || 'Unknown error'
+        details: error?.message || error?.name || JSON.stringify(error) || 'Unknown error'
       }),
     };
   }
