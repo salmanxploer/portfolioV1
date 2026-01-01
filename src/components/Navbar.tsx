@@ -1,24 +1,77 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Terminal, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { name: "Home", href: "#" },
-  { name: "Projects", href: "#projects" },
-  { name: "About", href: "#about" },
-  { name: "Contact", href: "#contact" },
+  { name: "Home", href: "#", sectionId: "home" },
+  { name: "Projects", href: "#projects", sectionId: "projects" },
+  { name: "About", href: "#about", sectionId: "about" },
+  { name: "Contact", href: "#contact", sectionId: "contact" },
 ];
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      if (rafRef.current) return;
+      
+      rafRef.current = requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 50);
+        rafRef.current = null;
+      });
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  // Intersection Observer for active section detection
+  useEffect(() => {
+    const sectionIds = ["projects", "about", "contact"];
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean) as HTMLElement[];
+
+    if (sections.length === 0) return;
+
+    const observerOptions = {
+      root: null,
+      rootMargin: "-20% 0px -60% 0px",
+      threshold: 0,
+    };
+
+    const observerCallback: IntersectionObserverCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    sections.forEach((section) => observer.observe(section));
+
+    // Handle scroll to top (Home section)
+    const handleScrollForHome = () => {
+      if (window.scrollY < 300) {
+        setActiveSection("home");
+      }
+    };
+
+    window.addEventListener("scroll", handleScrollForHome, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", handleScrollForHome);
+    };
   }, []);
 
   return (
@@ -44,21 +97,40 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="px-4 py-2 text-sm font-mono text-muted-foreground 
-                         hover:text-primary transition-colors relative group"
-              >
-                <span className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                  ./
-                </span>
-                {link.name}
-                <span className="absolute bottom-0 left-0 w-0 h-px bg-primary 
-                               group-hover:w-full transition-all duration-300" />
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.sectionId;
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className={cn(
+                    "px-4 py-2 text-sm font-mono transition-all duration-300 relative group",
+                    isActive
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-primary"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "text-primary transition-opacity",
+                      isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    )}
+                  >
+                    ./
+                  </span>
+                  {link.name}
+                  <span
+                    className={cn(
+                      "absolute bottom-0 left-0 h-px bg-primary transition-all duration-300",
+                      isActive ? "w-full" : "w-0 group-hover:w-full"
+                    )}
+                  />
+                  {isActive && (
+                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full animate-pulse" />
+                  )}
+                </a>
+              );
+            })}
           </div>
 
           {/* Mobile Menu Button */}
@@ -74,17 +146,25 @@ const Navbar = () => {
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-4 py-3 text-sm font-mono text-muted-foreground 
-                         hover:text-primary hover:bg-primary/5 transition-colors"
-              >
-                <span className="text-primary">$</span> cd {link.name.toLowerCase()}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.sectionId;
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={cn(
+                    "block px-4 py-3 text-sm font-mono transition-colors",
+                    isActive
+                      ? "text-primary bg-primary/10 border-l-2 border-primary"
+                      : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                  )}
+                >
+                  <span className="text-primary">$</span> cd {link.name.toLowerCase()}
+                  {isActive && <span className="ml-2 text-xs opacity-60">← current</span>}
+                </a>
+              );
+            })}
           </div>
         )}
       </div>

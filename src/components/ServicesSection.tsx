@@ -7,6 +7,7 @@ import {
   Zap,
   ArrowRight 
 } from "lucide-react";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const services = [
   {
@@ -63,20 +64,21 @@ const ServicesSection = () => {
   return (
     <section id="services" className="py-20 px-4 relative overflow-hidden">
       {/* Animated background elements */}
-      <div className="absolute inset-0 cyber-grid opacity-30" />
-      <div className="gradient-orb gradient-orb-2 absolute top-1/4 -right-48" />
-      <div className="gradient-orb gradient-orb-3 absolute bottom-1/4 -left-48" />
+      <div className="absolute inset-0 cyber-grid opacity-30" style={{ zIndex: 1 }} />
+      <div className="gradient-orb gradient-orb-2 absolute top-1/4 -right-48" style={{ zIndex: 2 }} />
+      <div className="gradient-orb gradient-orb-3 absolute bottom-1/4 -left-48" style={{ zIndex: 2 }} />
       
-      <div className="max-w-7xl mx-auto relative z-10">
+      <ScrollReveal className="max-w-7xl mx-auto relative z-10" as="div">
         {/* Section header */}
         <div className="text-center mb-16">
           <p className="text-sm font-mono text-primary mb-2">// WHAT I DO</p>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             <span className="text-gradient">&lt;Services /&gt;</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Transforming ideas into digital reality with cutting-edge technologies
-            and battle-tested development practices
+          <p className="text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            I build fast, SEO-optimized websites and web apps using <strong>React</strong>, <strong>TypeScript</strong>, and <strong>WordPress</strong>.
+            My focus is on <strong>Core Web Vitals</strong>, clean technical SEO (schema, sitemaps, robots), and measurable results with <strong>GA4</strong> and <strong>GTM</strong>.
+            Whether you need a high-converting landing page or a scalable product UI, I deliver performance, accessibility, and maintainable code.
           </p>
         </div>
 
@@ -147,7 +149,7 @@ const ServicesSection = () => {
             );
           })}
         </div>
-      </div>
+      </ScrollReveal>
     </section>
   );
 };

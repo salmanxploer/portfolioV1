@@ -96,8 +96,8 @@ const StatsSection = () => {
       <div className="absolute bottom-0 left-0 w-full h-px neon-line" />
       
       {/* Floating orbs */}
-      <div className="gradient-orb gradient-orb-1 absolute -top-32 -left-32" />
-      <div className="gradient-orb gradient-orb-2 absolute -bottom-32 -right-32" />
+      <div className="gradient-orb gradient-orb-1 absolute -top-32 -left-32" style={{ zIndex: 2 }} />
+      <div className="gradient-orb gradient-orb-2 absolute -bottom-32 -right-32" style={{ zIndex: 2 }} />
 
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

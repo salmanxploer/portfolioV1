@@ -1,5 +1,6 @@
 import ProjectCard from "./ProjectCard";
-import { useState } from "react";
+import ScrollReveal from "@/components/ScrollReveal";
+import { useState, useMemo, memo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 const projects = {
@@ -36,29 +37,35 @@ const categoryColors: Record<Category, string> = {
   React: "from-neon-cyan to-neon-green",
 };
 
-const ProjectsSection = () => {
+const ProjectsSection = memo(function ProjectsSection() {
   const [activeCategory, setActiveCategory] = useState<Category>("All");
 
-  const filteredProjects = activeCategory === "All"
-    ? Object.entries(projects).flatMap(([category, items]) =>
+  const filteredProjects = useMemo(() => {
+    if (activeCategory === "All") {
+      return Object.entries(projects).flatMap(([category, items]) =>
         items.map((project) => ({ ...project, category }))
-      )
-    : projects[activeCategory as keyof typeof projects]?.map((project) => ({
-        ...project,
-        category: activeCategory,
-      })) || [];
+      );
+    }
+    return projects[activeCategory as keyof typeof projects]?.map((project) => ({
+      ...project,
+      category: activeCategory,
+    })) || [];
+  }, [activeCategory]);
+
+  const handleCategoryClick = useCallback((category: Category) => {
+    setActiveCategory(category);
+  }, []);
 
   return (
     <section id="projects" className="py-20 px-4 relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 cyber-grid opacity-20" />
-      <div className="gradient-orb gradient-orb-2 absolute top-1/3 -left-32" />
-      <div className="gradient-orb gradient-orb-1 absolute bottom-1/3 -right-32" />
+      {/* Background effects - reduced for performance */}
+      <div className="absolute inset-0 cyber-grid opacity-10" style={{ zIndex: 1 }} />
+      <div className="gradient-orb gradient-orb-2 absolute top-1/3 -left-32 hidden md:block" style={{ zIndex: 2 }} />
       
       {/* Section decoration */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-neon-pink/50 to-transparent" />
       
-      <div className="max-w-7xl mx-auto relative z-10">
+      <ScrollReveal className="max-w-7xl mx-auto relative z-10" as="div">
         {/* Section header */}
         <div className="text-center mb-12">
           <p className="text-sm font-mono text-primary mb-2">// PORTFOLIO</p>
@@ -76,9 +83,9 @@ const ProjectsSection = () => {
           {categories.map((category) => (
             <button
               key={category}
-              onClick={() => setActiveCategory(category)}
+              onClick={() => handleCategoryClick(category)}
               className={cn(
-                "relative px-6 py-2.5 font-mono text-sm rounded-xl transition-all duration-300 overflow-hidden group",
+                "relative px-6 py-2.5 font-mono text-sm rounded-xl transition-colors duration-200 overflow-hidden group transform-gpu",
                 activeCategory === category
                   ? "text-background font-semibold"
                   : "bg-card border border-border text-muted-foreground hover:border-primary hover:text-primary"
@@ -114,9 +121,9 @@ const ProjectsSection = () => {
             />
           ))}
         </div>
-      </div>
+      </ScrollReveal>
     </section>
   );
-};
+});
 
 export default ProjectsSection;

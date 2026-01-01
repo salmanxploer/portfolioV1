@@ -1,4 +1,5 @@
 import { Code, Palette, Rocket, Shield, Zap, Globe, Coffee, Clock } from "lucide-react";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const skills = [
   {
@@ -43,17 +44,17 @@ const AboutSection = () => {
   return (
     <section id="about" className="py-20 px-4 relative overflow-hidden">
       {/* Colorful background */}
-      <div className="absolute inset-0 mesh-gradient opacity-50" />
-      <div className="absolute inset-0 cyber-grid opacity-20" />
+      <div className="absolute inset-0 mesh-gradient opacity-50" style={{ zIndex: 1 }} />
+      <div className="absolute inset-0 cyber-grid opacity-20" style={{ zIndex: 1 }} />
       
       {/* Decorative orbs */}
-      <div className="gradient-orb gradient-orb-1 absolute top-0 right-0 opacity-30" />
-      <div className="gradient-orb gradient-orb-2 absolute bottom-0 left-0 opacity-30" />
+      <div className="gradient-orb gradient-orb-1 absolute top-0 right-0 opacity-30" style={{ zIndex: 2 }} />
+      <div className="gradient-orb gradient-orb-2 absolute bottom-0 left-0 opacity-30" style={{ zIndex: 2 }} />
       
       {/* Top line decoration */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-neon-cyan/50 to-transparent" />
       
-      <div className="max-w-7xl mx-auto relative z-10">
+      <ScrollReveal className="max-w-7xl mx-auto relative z-10" as="div">
         {/* Section header */}
         <div className="text-center mb-16">
           <p className="text-sm font-mono text-primary mb-2">// ABOUT ME</p>
@@ -147,7 +148,7 @@ const AboutSection = () => {
             );
           })}
         </div>
-      </div>
+      </ScrollReveal>
     </section>
   );
 };

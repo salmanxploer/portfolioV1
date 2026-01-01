@@ -34,16 +34,13 @@ const Footer = () => {
               <Terminal className="w-5 h-5 text-primary" />
             </div>
             <span className="font-mono font-semibold text-foreground">
-              salman<span className="text-gradient">.</span>dev
+              salmanhafiz<span className="text-gradient">.</span>me
             </span>
           </div>
 
           {/* Center text */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground font-mono">
-            <span>Built with</span>
-            <Heart className="w-4 h-4 text-neon-pink animate-pulse" />
-            <span>&</span>
-            <Code className="w-4 h-4 text-neon-cyan" />
+            <span>Built </span>
             <span>by</span>
             <span className="text-gradient font-semibold">Salman Hafiz</span>
           </div>
@@ -71,13 +68,14 @@ const Footer = () => {
 
         {/* ASCII art decoration */}
         <div className="mt-8 text-center hidden md:block">
-          <pre className="text-[8px] text-primary/20 font-mono leading-tight select-none">
+            <pre className="text-[9px] text-primary/30 font-mono leading-[1.1] select-none tracking-tight">
 {`
-   _____ _____ __    __  ______   _   __   __  __   ___    ______   __  _____
-  / ___// ___// /   /  |/  / _ | / | / /  / / / /  / _ |  / __/  | / / / ___/
-  \\__ \\/ /__ / /__ / /|_/ / __ |/  |/ /  / /_/ /  / __ | / _// /|/ /  \\__ \\
- ___/ / /___/____// /  / / /_/ / /|  /  / __  /  / /_/ |/ _// /|  /  ___/ /
-/____/\\___/     /_/  /_/\\__,_/_/ |_/  /_/ /_/  /_/ |_/___/_/ |_/  /____/
+          ███████╗ █████╗ ██╗     ███╗   ███╗ █████╗ ███╗   ██╗    ██╗  ██╗ █████╗ ███████╗██╗███████╗
+          ██╔════╝██╔══██╗██║     ████╗ ████║██╔══██╗████╗  ██║    ██║  ██║██╔══██╗██╔════╝██║╚══███╔╝
+          ███████╗███████║██║     ██╔████╔██║███████║██╔██╗ ██║    ███████║███████║█████╗  ██║  ███╔╝ 
+          ╚════██║██╔══██║██║     ██║╚██╔╝██║██╔══██║██║╚██╗██║    ██╔══██║██╔══██║██╔══╝  ██║ ███╔╝  
+          ███████║██║  ██║███████╗██║ ╚═╝ ██║██║  ██║██║ ╚████║    ██║  ██║██║  ██║██║     ██║███████╗
+          ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
 `}
           </pre>
         </div>

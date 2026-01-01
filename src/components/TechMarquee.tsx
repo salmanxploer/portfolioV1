@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import { 
   Code2, 
   FileCode, 
@@ -30,12 +31,12 @@ const techStack = [
   { name: "WooCommerce", icon: Zap },
 ];
 
-const TechMarquee = () => {
-  // Double the items for seamless infinite scroll
-  const items = [...techStack, ...techStack];
+const TechMarquee = memo(function TechMarquee() {
+  // Double the items for seamless infinite scroll - memoized
+  const items = useMemo(() => [...techStack, ...techStack], []);
 
   return (
-    <div className="w-full overflow-hidden py-8 bg-terminal-surface border-y border-border">
+    <div className="w-full overflow-hidden py-8 bg-terminal-surface border-y border-border contain-layout">
       <div className="marquee">
         <div className="marquee-content gap-8 md:gap-16">
           {items.map((tech, index) => {
@@ -44,12 +45,12 @@ const TechMarquee = () => {
               <div
                 key={`${tech.name}-${index}`}
                 className="flex items-center gap-3 px-6 py-3 border border-border rounded-lg 
-                         bg-background/50 hover-glow transition-all duration-300 
+                         bg-background/50 hover-glow 
                          hover:border-primary hover:bg-primary/10 group cursor-pointer
-                         min-w-fit"
+                         min-w-fit transform-gpu"
               >
                 <Icon 
-                  className="w-6 h-6 text-primary group-hover:animate-pulse-glow transition-all" 
+                  className="w-6 h-6 text-primary transition-transform duration-200 group-hover:scale-110" 
                   strokeWidth={1.5}
                 />
                 <span className="text-foreground font-mono text-sm md:text-base whitespace-nowrap">
@@ -62,6 +63,6 @@ const TechMarquee = () => {
       </div>
     </div>
   );
-};
+});
 
 export default TechMarquee;
