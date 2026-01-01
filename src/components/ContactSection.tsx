@@ -4,9 +4,9 @@ import ScrollReveal from "@/components/ScrollReveal";
 import { Github, Linkedin, Mail, Twitter, Send, MessageSquare, MapPin, Phone, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 const socials = [
-  { name: "GitHub", icon: Github, url: "https://github.com/salmanhafiz", color: "hover:text-foreground hover:border-foreground", glow: "hover:shadow-[0_0_20px_hsl(0_0%_100%/0.3)]" },
-  { name: "LinkedIn", icon: Linkedin, url: "https://linkedin.com/in/salmanhafiz", color: "hover:text-neon-blue hover:border-neon-blue", glow: "hover:shadow-[0_0_20px_hsl(220_100%_60%/0.5)]" },
-  { name: "Twitter", icon: Twitter, url: "https://twitter.com/salmanhafiz", color: "hover:text-neon-cyan hover:border-neon-cyan", glow: "hover:shadow-[0_0_20px_hsl(180_100%_50%/0.5)]" },
+  { name: "GitHub", icon: Github, url: "https://github.com/salmanhafizshuvo/", color: "hover:text-foreground hover:border-foreground", glow: "hover:shadow-[0_0_20px_hsl(0_0%_100%/0.3)]" },
+  { name: "LinkedIn", icon: Linkedin, url: "https://bd.linkedin.com/in/mdsalmanhafiz", color: "hover:text-neon-blue hover:border-neon-blue", glow: "hover:shadow-[0_0_20px_hsl(220_100%_60%/0.5)]" },
+  { name: "Twitter", icon: Twitter, url: "https://x.com/mdsalmanhafiz", color: "hover:text-neon-cyan hover:border-neon-cyan", glow: "hover:shadow-[0_0_20px_hsl(180_100%_50%/0.5)]" },
   { name: "Email", icon: Mail, url: "mailto:insideshuv01@gmail.com", color: "hover:text-neon-green hover:border-neon-green", glow: "hover:shadow-[0_0_20px_hsl(120_100%_50%/0.5)]" },
 ];
 
