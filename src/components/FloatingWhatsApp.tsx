@@ -2,7 +2,7 @@ import { memo } from "react";
 import { MessageCircle } from "lucide-react";
 
 const FloatingWhatsApp = memo(function FloatingWhatsApp() {
-  const phoneNumber = "880171780127"; // Bangladesh number
+  const phoneNumber = "8801717807127"; // Bangladesh number
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=Hi%20Salman%2C%20I%27d%20like%20to%20discuss%20a%20project%20with%20you.`;
 
   return (
