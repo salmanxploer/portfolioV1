@@ -60,8 +60,8 @@ const HeroSection = memo(function HeroSection() {
             <span className="text-primary font-bold">&gt;</span> 
             <TypewriterText 
               texts={[
-                "Professional Web Developer",
-                "WordPress Customizer",
+                "Professional Frontend Engineer",
+                "WordPress Web Developer",
                 "WooCommerce Specialist",
                 "React Expert",
                 "SEO Optimization Pro"
