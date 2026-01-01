@@ -30,7 +30,12 @@ const ContactSection = () => {
     setStatus('sending');
 
     try {
-      const response = await fetch('http://localhost:3001/api/send-email', {
+      // Use Netlify Functions endpoint in production, localhost in development
+      const apiUrl = import.meta.env.DEV 
+        ? 'http://localhost:3001/api/send-email' 
+        : '/.netlify/functions/send-email';
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
