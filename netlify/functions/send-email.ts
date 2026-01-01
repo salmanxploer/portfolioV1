@@ -55,12 +55,15 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ success: true, data }),
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Resend error:', error);
     return {
       statusCode: 500,
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ error: 'Failed to send email' }),
+      body: JSON.stringify({ 
+        error: 'Failed to send email',
+        details: error?.message || 'Unknown error'
+      }),
     };
   }
 };
