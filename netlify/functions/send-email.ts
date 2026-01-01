@@ -1,9 +1,10 @@
 import type { Handler, HandlerEvent, HandlerContext } from "@netlify/functions";
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
+  // Initialize Resend inside the handler to ensure env vars are available
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  
   // Handle CORS preflight
   if (event.httpMethod === 'OPTIONS') {
     return {
