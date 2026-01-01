@@ -43,17 +43,21 @@ const ContactSection = () => {
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+      
       if (response.ok) {
         setStatus('success');
         setFormData({ name: '', email: '', project: '' });
         setTimeout(() => setStatus('idle'), 5000);
       } else {
-        const error = await response.json();
+        console.error('Email error:', data);
+        alert(`Error: ${data.error || 'Unknown error'}\nDetails: ${data.details || 'No details'}`);
         setStatus('error');
         setTimeout(() => setStatus('idle'), 5000);
       }
     } catch (error) {
       console.error('Error sending email:', error);
+      alert(`Network error: ${error}`);
       setStatus('error');
       setTimeout(() => setStatus('idle'), 5000);
     }
