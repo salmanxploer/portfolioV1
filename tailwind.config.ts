@@ -51,19 +51,19 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         neon: {
-          green: "hsl(120 100% 50%)",
-          cyan: "hsl(180 100% 50%)",
-          purple: "hsl(280 100% 60%)",
-          pink: "hsl(330 100% 60%)",
-          blue: "hsl(220 100% 60%)",
-          orange: "hsl(30 100% 50%)",
-          dim: "hsl(120 100% 30%)",
-          dark: "hsl(120 100% 15%)",
+          green: "hsl(164 88% 64%)",
+          cyan: "hsl(192 92% 66%)",
+          purple: "hsl(266 85% 73%)",
+          pink: "hsl(328 88% 74%)",
+          blue: "hsl(214 92% 70%)",
+          orange: "hsl(28 96% 67%)",
+          dim: "hsl(214 44% 42%)",
+          dark: "hsl(228 24% 15%)",
         },
         terminal: {
-          bg: "hsl(120 5% 4%)",
-          surface: "hsl(120 5% 8%)",
-          border: "hsl(120 40% 20%)",
+          bg: "hsl(228 30% 8%)",
+          surface: "hsl(228 26% 12%)",
+          border: "hsl(224 20% 28%)",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -112,10 +112,10 @@ export default {
         },
         "pulse-glow": {
           "0%, 100%": { 
-            boxShadow: "0 0 5px hsl(120 100% 50% / 0.5), 0 0 10px hsl(120 100% 50% / 0.3)"
+            boxShadow: "0 0 5px hsl(196 92% 66% / 0.45), 0 0 10px hsl(196 92% 66% / 0.25)"
           },
           "50%": { 
-            boxShadow: "0 0 20px hsl(120 100% 50% / 0.8), 0 0 40px hsl(120 100% 50% / 0.5)"
+            boxShadow: "0 0 20px hsl(196 92% 66% / 0.75), 0 0 40px hsl(196 92% 66% / 0.4)"
           },
         },
         "flicker": {

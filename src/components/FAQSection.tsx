@@ -26,7 +26,8 @@ const faqs = [
 
 const FAQSection = () => {
   return (
-    <section id="faq" className="py-20 px-4 relative overflow-hidden">
+    <section id="faq" className="section-shell py-20 px-4 relative overflow-hidden">
+      <div className="section-divider" />
       <div className="absolute inset-0 cyber-grid opacity-20" />
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="text-center mb-12">

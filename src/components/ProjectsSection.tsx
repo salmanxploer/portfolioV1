@@ -57,13 +57,13 @@ const ProjectsSection = memo(function ProjectsSection() {
   }, []);
 
   return (
-    <section id="projects" className="py-20 px-4 relative overflow-hidden">
+    <section id="projects" className="section-shell py-20 px-4 relative overflow-hidden">
       {/* Background effects - reduced for performance */}
       <div className="absolute inset-0 cyber-grid opacity-10" style={{ zIndex: 1 }} />
       <div className="gradient-orb gradient-orb-2 absolute top-1/3 -left-32 hidden md:block" style={{ zIndex: 2 }} />
       
       {/* Section decoration */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-neon-pink/50 to-transparent" />
+      <div className="section-divider" />
       
       <ScrollReveal className="max-w-7xl mx-auto relative z-10" as="div">
         {/* Section header */}

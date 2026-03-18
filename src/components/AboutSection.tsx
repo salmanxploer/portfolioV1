@@ -42,7 +42,7 @@ const skills = [
 
 const AboutSection = () => {
   return (
-    <section id="about" className="py-20 px-4 relative overflow-hidden">
+    <section id="about" className="section-shell py-20 px-4 relative overflow-hidden">
       {/* Colorful background */}
       <div className="absolute inset-0 mesh-gradient opacity-50" style={{ zIndex: 1 }} />
       <div className="absolute inset-0 cyber-grid opacity-20" style={{ zIndex: 1 }} />
@@ -52,7 +52,7 @@ const AboutSection = () => {
       <div className="gradient-orb gradient-orb-2 absolute bottom-0 left-0 opacity-30" style={{ zIndex: 2 }} />
       
       {/* Top line decoration */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-neon-cyan/50 to-transparent" />
+      <div className="section-divider" />
       
       <ScrollReveal className="max-w-7xl mx-auto relative z-10" as="div">
         {/* Section header */}

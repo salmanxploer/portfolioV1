@@ -65,14 +65,14 @@ const ContactSection = () => {
   };
 
   return (
-    <section id="contact" className="py-20 px-4 relative overflow-hidden">
+    <section id="contact" className="section-shell py-20 px-4 relative overflow-hidden">
       {/* Colorful background */}
       <div className="absolute inset-0 mesh-gradient opacity-40" style={{ zIndex: 1 }} />
       <div className="gradient-orb gradient-orb-1 absolute -top-32 left-1/4" style={{ zIndex: 2 }} />
       <div className="gradient-orb gradient-orb-3 absolute -bottom-32 right-1/4" style={{ zIndex: 2 }} />
       
       {/* Top line */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-neon-purple/50 to-transparent" />
+      <div className="section-divider" />
       
       <ScrollReveal className="max-w-4xl mx-auto relative z-10 text-center" as="div">
         {/* Section header */}

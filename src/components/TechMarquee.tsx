@@ -11,10 +11,18 @@ import {
   Globe,
   Layers,
   Zap,
-  Terminal
+  Terminal,
+  Sparkles
 } from "lucide-react";
 
 const techStack = [
+  { name: "01 GSAP", icon: Zap },
+  { name: "02 ScrollTrigger", icon: Layers },
+  { name: "03 SVG Animation", icon: FileCode },
+  { name: "04 Framer Motion", icon: Flame },
+  { name: "05 Micro-Interactions", icon: Sparkles },
+  { name: "06 UI Motion Design", icon: Globe },
+  { name: "Zustand", icon: Database },
   { name: "React", icon: Code2 },
   { name: "JavaScript", icon: FileCode },
   { name: "TypeScript", icon: FileCode },
@@ -29,6 +37,12 @@ const techStack = [
   { name: "PHP", icon: Terminal },
   { name: "Laravel", icon: Layers },
   { name: "WooCommerce", icon: Zap },
+  { name: "Lottie", icon: Flame },
+  { name: "Lenis Smooth Scroll", icon: Globe },
+  { name: "Motion One", icon: Sparkles },
+  { name: "Three.js", icon: Layers },
+  { name: "shadcn/ui", icon: Settings },
+  { name: "Tailwind CSS", icon: Code2 },
 ];
 
 const TechMarquee = memo(function TechMarquee() {

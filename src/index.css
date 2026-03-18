@@ -6,65 +6,65 @@
 
 @layer base {
   :root {
-    /* Cyberpunk/Hacker Theme with Color Accents */
-    --background: 120 5% 4%;
-    --foreground: 120 100% 50%;
+    /* Matte dark modern palette */
+    --background: 228 30% 8%;
+    --foreground: 220 40% 93%;
 
-    --card: 120 5% 8%;
-    --card-foreground: 120 100% 50%;
+    --card: 228 26% 12%;
+    --card-foreground: 220 40% 93%;
 
-    --popover: 120 5% 6%;
-    --popover-foreground: 120 100% 50%;
+    --popover: 228 28% 10%;
+    --popover-foreground: 220 40% 93%;
 
-    --primary: 120 100% 50%;
-    --primary-foreground: 120 5% 4%;
+    --primary: 196 92% 66%;
+    --primary-foreground: 228 30% 8%;
 
-    --secondary: 120 20% 12%;
-    --secondary-foreground: 120 100% 50%;
+    --secondary: 228 20% 16%;
+    --secondary-foreground: 220 36% 86%;
 
-    --muted: 120 10% 15%;
-    --muted-foreground: 120 30% 45%;
+    --muted: 228 16% 20%;
+    --muted-foreground: 220 18% 68%;
 
-    --accent: 120 100% 40%;
-    --accent-foreground: 120 5% 4%;
+    --accent: 266 85% 73%;
+    --accent-foreground: 228 30% 8%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 120 40% 20%;
-    --input: 120 20% 15%;
-    --ring: 120 100% 50%;
+    --border: 224 20% 28%;
+    --input: 226 18% 20%;
+    --ring: 196 92% 66%;
 
     --radius: 0.5rem;
 
     /* Color Accents */
-    --neon-cyan: 180 100% 50%;
-    --neon-purple: 280 100% 60%;
-    --neon-pink: 330 100% 60%;
-    --neon-blue: 220 100% 60%;
-    --neon-orange: 30 100% 50%;
+    --neon-cyan: 192 92% 66%;
+    --neon-purple: 266 85% 73%;
+    --neon-pink: 328 88% 74%;
+    --neon-blue: 214 92% 70%;
+    --neon-orange: 28 96% 67%;
 
     /* Custom Hacker Variables */
-    --glow-primary: 0 0 20px hsl(120 100% 50% / 0.5), 0 0 40px hsl(120 100% 50% / 0.3);
-    --glow-intense: 0 0 10px hsl(120 100% 50%), 0 0 20px hsl(120 100% 50%), 0 0 40px hsl(120 100% 50% / 0.5);
-    --glow-cyan: 0 0 20px hsl(180 100% 50% / 0.5), 0 0 40px hsl(180 100% 50% / 0.3);
-    --glow-purple: 0 0 20px hsl(280 100% 60% / 0.5), 0 0 40px hsl(280 100% 60% / 0.3);
-    --glow-pink: 0 0 20px hsl(330 100% 60% / 0.5), 0 0 40px hsl(330 100% 60% / 0.3);
-    --text-shadow-glow: 0 0 10px hsl(120 100% 50% / 0.8), 0 0 20px hsl(120 100% 50% / 0.5);
+    --glow-primary: 0 0 16px hsl(196 92% 66% / 0.35), 0 0 30px hsl(196 92% 66% / 0.2);
+    --glow-intense: 0 0 8px hsl(196 92% 66%), 0 0 18px hsl(196 92% 66%), 0 0 34px hsl(196 92% 66% / 0.35);
+    --glow-cyan: 0 0 18px hsl(192 92% 66% / 0.35), 0 0 30px hsl(192 92% 66% / 0.2);
+    --glow-purple: 0 0 18px hsl(266 85% 73% / 0.35), 0 0 30px hsl(266 85% 73% / 0.2);
+    --glow-pink: 0 0 18px hsl(328 88% 74% / 0.35), 0 0 30px hsl(328 88% 74% / 0.2);
+    --text-shadow-glow: 0 0 8px hsl(196 92% 66% / 0.7), 0 0 16px hsl(196 92% 66% / 0.45);
 
-    --sidebar-background: 120 5% 6%;
-    --sidebar-foreground: 120 100% 50%;
-    --sidebar-primary: 120 100% 50%;
-    --sidebar-primary-foreground: 120 5% 4%;
-    --sidebar-accent: 120 20% 15%;
-    --sidebar-accent-foreground: 120 100% 50%;
-    --sidebar-border: 120 40% 20%;
-    --sidebar-ring: 120 100% 50%;
+    --sidebar-background: 228 26% 10%;
+    --sidebar-foreground: 220 40% 90%;
+    --sidebar-primary: 196 92% 66%;
+    --sidebar-primary-foreground: 228 30% 8%;
+    --sidebar-accent: 228 20% 18%;
+    --sidebar-accent-foreground: 220 34% 86%;
+    --sidebar-border: 224 20% 26%;
+    --sidebar-ring: 196 92% 66%;
   }
 
   .dark {
-    --background: 120 5% 4%;
-    --foreground: 120 100% 50%;
+    --background: 228 30% 8%;
+    --foreground: 220 40% 93%;
   }
 }
 
@@ -85,9 +85,38 @@
     overflow-x: hidden;
   }
 
+  body.has-custom-cursor,
+  body.has-custom-cursor * {
+    cursor: none !important;
+  }
+
+  .global-cursor-ring {
+    width: 26px;
+    height: 26px;
+    will-change: transform;
+    transition: width 120ms ease, height 120ms ease, box-shadow 180ms ease;
+  }
+
+  .global-cursor-dot {
+    width: 6px;
+    height: 6px;
+    will-change: transform;
+    transition: width 120ms ease, height 120ms ease, box-shadow 180ms ease;
+  }
+
+  .global-cursor-ring.is-interactive {
+    width: 36px;
+    height: 36px;
+  }
+
+  .global-cursor-dot.is-interactive {
+    width: 8px;
+    height: 8px;
+  }
+
   ::selection {
-    background: hsl(120 100% 50% / 0.3);
-    color: hsl(120 100% 50%);
+    background: hsl(196 92% 66% / 0.28);
+    color: hsl(220 40% 95%);
   }
 
   ::-webkit-scrollbar {
@@ -95,16 +124,16 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: hsl(120 5% 8%);
+    background: hsl(228 26% 12%);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(120 100% 50% / 0.3);
+    background: hsl(196 92% 66% / 0.32);
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(120 100% 50% / 0.5);
+    background: hsl(196 92% 66% / 0.52);
   }
 }
 
@@ -278,6 +307,31 @@
     will-change: box-shadow;
   }
 
+  .section-shell {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, hsl(228 30% 8%) 0%, hsl(228 26% 10%) 50%, hsl(228 24% 9%) 100%);
+  }
+
+  .section-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 14% 22%, hsl(196 92% 66% / 0.12), transparent 42%),
+      radial-gradient(circle at 86% 76%, hsl(266 85% 73% / 0.12), transparent 44%);
+    pointer-events: none;
+  }
+
+  .section-divider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(196 92% 66% / 0.55), transparent);
+  }
+
   .hover-glow:hover {
     box-shadow: var(--glow-primary);
     border-color: hsl(120 100% 50%);
@@ -393,6 +447,123 @@
     height: 2px;
     background: linear-gradient(90deg, transparent, hsl(120 100% 50%), hsl(180 100% 50%), hsl(120 100% 50%), transparent);
     animation: neon-flow 3s ease-in-out infinite;
+  }
+
+  .hero-dna-column {
+    position: absolute;
+    top: 8%;
+    height: 84%;
+    width: 132px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    opacity: 0.9;
+    filter: blur(0.1px);
+    animation: dna-column-float 9s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .hero-dna-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transform-origin: center;
+    animation-name: dna-row-wave;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    will-change: transform, opacity;
+  }
+
+  .hero-dna-bridge {
+    flex: 1;
+    height: 2px;
+    margin: 0 10px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, hsl(192 92% 66% / 0.72), hsl(266 85% 73% / 0.72));
+    box-shadow: 0 0 14px hsl(196 92% 66% / 0.34);
+  }
+
+  .hero-dna-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    display: block;
+  }
+
+  .hero-dna-dot-a {
+    background: hsl(192 92% 66% / 0.88);
+    box-shadow: 0 0 14px hsl(192 92% 66% / 0.72), 0 0 28px hsl(192 92% 66% / 0.28);
+  }
+
+  .hero-dna-dot-b {
+    background: hsl(328 88% 74% / 0.86);
+    box-shadow: 0 0 14px hsl(328 88% 74% / 0.72), 0 0 28px hsl(328 88% 74% / 0.3);
+  }
+
+  .hero-dna-dot-c {
+    background: hsl(266 85% 73% / 0.88);
+    box-shadow: 0 0 14px hsl(266 85% 73% / 0.72), 0 0 28px hsl(266 85% 73% / 0.3);
+  }
+
+  .hero-dna-dot-d {
+    background: hsl(164 88% 64% / 0.84);
+    box-shadow: 0 0 14px hsl(164 88% 64% / 0.72), 0 0 28px hsl(164 88% 64% / 0.3);
+  }
+
+  .hero-glow-blob {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(34px);
+    opacity: 0.28;
+    animation: blob-float 10s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .hero-glow-blob-a {
+    width: 180px;
+    height: 180px;
+    left: 14%;
+    top: 18%;
+    background: hsl(192 92% 66% / 0.7);
+  }
+
+  .hero-glow-blob-b {
+    width: 220px;
+    height: 220px;
+    right: 12%;
+    top: 30%;
+    background: hsl(266 85% 73% / 0.65);
+    animation-delay: -2.8s;
+  }
+
+  .hero-glow-blob-c {
+    width: 160px;
+    height: 160px;
+    left: 48%;
+    bottom: 16%;
+    background: hsl(328 88% 74% / 0.62);
+    animation-delay: -4.8s;
+  }
+
+  .hero-name-glow-backdrop {
+    position: absolute;
+    inset: -24px -32px;
+    border-radius: 24px;
+    background: radial-gradient(circle at center, hsl(196 92% 66% / 0.26), transparent 62%);
+    filter: blur(12px);
+    pointer-events: none;
+  }
+
+  .hero-name-glow {
+    position: relative;
+    color: hsl(220 42% 97%);
+    text-shadow:
+      0 0 7px hsl(196 92% 66% / 0.85),
+      0 0 22px hsl(196 92% 66% / 0.62),
+      0 0 42px hsl(266 85% 73% / 0.5);
+    letter-spacing: 0.08em;
+    animation: hero-name-breathe 3.8s ease-in-out infinite;
   }
 }
 
@@ -569,4 +740,55 @@
 @keyframes pulse-scale {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
+}
+
+@keyframes blob-float {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -16px, 0) scale(1.06);
+  }
+}
+
+@keyframes dna-column-float {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+@keyframes dna-row-wave {
+  0%, 100% {
+    transform: translate3d(calc(var(--dna-amplitude, 12px) * -1), 0, 0);
+    opacity: 0.62;
+  }
+  50% {
+    transform: translate3d(var(--dna-amplitude, 12px), 0, 0);
+    opacity: 0.96;
+  }
+}
+
+@media (max-width: 1024px) {
+  .global-cursor-ring,
+  .global-cursor-dot {
+    display: none;
+  }
+}
+
+@keyframes hero-name-breathe {
+  0%, 100% {
+    text-shadow:
+      0 0 6px hsl(196 92% 66% / 0.7),
+      0 0 20px hsl(196 92% 66% / 0.55),
+      0 0 34px hsl(266 85% 73% / 0.4);
+  }
+  50% {
+    text-shadow:
+      0 0 9px hsl(196 92% 66% / 0.9),
+      0 0 28px hsl(196 92% 66% / 0.72),
+      0 0 46px hsl(266 85% 73% / 0.52);
+  }
 }

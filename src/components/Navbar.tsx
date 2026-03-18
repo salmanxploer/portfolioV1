@@ -1,19 +1,24 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Terminal, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLocation } from "react-router-dom";
 
 const navLinks = [
-  { name: "Home", href: "#", sectionId: "home" },
-  { name: "Projects", href: "#projects", sectionId: "projects" },
-  { name: "About", href: "#about", sectionId: "about" },
-  { name: "Contact", href: "#contact", sectionId: "contact" },
+  { name: "Home", href: "/", sectionId: "home" },
+  { name: "Projects", href: "/#projects", sectionId: "projects" },
+  { name: "About", href: "/#about", sectionId: "about" },
+  { name: "Contact", href: "/#contact", sectionId: "contact" },
 ];
 
 const Navbar = () => {
+  const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const rafRef = useRef<number | null>(null);
+  const isHomeRoute = location.pathname === "/";
+  const isBlogRoute = location.pathname.startsWith("/blog");
+  const isBlogActive = activeSection === "blog";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,6 +39,8 @@ const Navbar = () => {
 
   // Intersection Observer for active section detection
   useEffect(() => {
+    if (!isHomeRoute) return;
+
     const sectionIds = ["projects", "about", "contact"];
     const sections = sectionIds
       .map((id) => document.getElementById(id))
@@ -72,7 +79,21 @@ const Navbar = () => {
       observer.disconnect();
       window.removeEventListener("scroll", handleScrollForHome);
     };
-  }, []);
+  }, [isHomeRoute]);
+
+  useEffect(() => {
+    if (isBlogRoute) {
+      setActiveSection("blog");
+      return;
+    }
+
+    if (isHomeRoute) {
+      setActiveSection("home");
+      return;
+    }
+
+    setActiveSection("");
+  }, [isBlogRoute, isHomeRoute]);
 
   return (
     <nav
@@ -86,7 +107,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2 group">
+          <a href="/" className="flex items-center gap-2 group">
             <Terminal className="w-6 h-6 text-primary group-hover:animate-pulse" />
             <span className="font-mono font-bold text-lg">
               <span className="text-primary">&lt;</span>
@@ -131,6 +152,15 @@ const Navbar = () => {
                 </a>
               );
             })}
+            <a
+              href="/blog"
+              className={cn(
+                "px-4 py-2 text-sm font-mono transition-colors",
+                isBlogActive ? "text-primary" : "text-muted-foreground hover:text-primary"
+              )}
+            >
+              ./Blog
+            </a>
           </div>
 
           {/* Mobile Menu Button */}
@@ -165,6 +195,18 @@ const Navbar = () => {
                 </a>
               );
             })}
+            <a
+              href="/blog"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={cn(
+                "block px-4 py-3 text-sm font-mono transition-colors",
+                isBlogActive
+                  ? "text-primary bg-primary/10 border-l-2 border-primary"
+                  : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+              )}
+            >
+              <span className="text-primary">$</span> open blog
+            </a>
           </div>
         )}
       </div>
