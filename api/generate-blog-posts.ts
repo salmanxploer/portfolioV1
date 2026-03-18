@@ -56,7 +56,7 @@ const resolveProvider = (): ProviderConfig | null => {
     return {
       provider: "openrouter",
       apiKey: openRouterKey,
-      model: process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || "meta-llama/llama-3.1-8b-instruct:free",
+      model: process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || "openrouter/auto",
       endpoint: "https://openrouter.ai/api/v1/chat/completions",
       extraHeaders: {
         "HTTP-Referer": process.env.SITE_URL || "https://salmanhafiz.me",

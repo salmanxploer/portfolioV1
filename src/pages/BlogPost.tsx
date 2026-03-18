@@ -80,8 +80,38 @@ const BlogPost = () => {
     return (
       <main className="min-h-screen bg-background">
         <Navbar />
-        <section className="pt-28 pb-16 px-4">
-          <div className="max-w-4xl mx-auto text-muted-foreground font-mono">Loading article...</div>
+        <section className="pt-28 pb-16 px-4 section-shell relative overflow-hidden">
+          <div className="absolute inset-0 cyber-grid opacity-10" />
+          <div className="max-w-4xl mx-auto relative z-10">
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg border border-primary/30 bg-card/60 backdrop-blur-sm mb-8">
+              <span className="w-3 h-3 rounded-full bg-primary animate-pulse" />
+              <span className="text-xs font-mono text-primary">Loading single post...</span>
+            </div>
+
+            <div className="p-6 md:p-8 rounded-2xl border border-border bg-card/70 backdrop-blur-sm animate-pulse">
+              <div className="w-2/3 h-4 rounded bg-muted/60 mb-5" />
+              <div className="w-full h-12 md:h-16 rounded bg-muted/50 mb-4" />
+
+              <div className="flex flex-wrap gap-3 mb-8">
+                <div className="w-24 h-6 rounded-full bg-muted/50" />
+                <div className="w-24 h-6 rounded-full bg-muted/50" />
+                <div className="w-20 h-6 rounded-full bg-muted/50" />
+              </div>
+
+              <div className="space-y-4">
+                <div className="w-full h-3 rounded bg-muted/45" />
+                <div className="w-[95%] h-3 rounded bg-muted/45" />
+                <div className="w-[90%] h-3 rounded bg-muted/45" />
+                <div className="w-[88%] h-3 rounded bg-muted/45" />
+                <div className="w-[70%] h-3 rounded bg-muted/45" />
+              </div>
+
+              <div className="mt-10 flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full border-2 border-primary/40 border-t-primary animate-spin" />
+                <span className="text-xs text-muted-foreground font-mono">Preparing a modern reading experience</span>
+              </div>
+            </div>
+          </div>
         </section>
         <Footer />
       </main>
