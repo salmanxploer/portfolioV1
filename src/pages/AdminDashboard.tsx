@@ -35,6 +35,7 @@ type PostForm = {
 type PostStatusFilter = "all" | "published" | "draft" | "featured";
 type PostSortOption = "updated" | "created" | "views" | "title";
 type GenerationMode = "tech" | "client-centric" | "mixed";
+type LengthPreset = "short" | "medium" | "long";
 
 const AUTO_SCHEDULED_PREFIX = "auto-scheduled-";
 const FOCUS_KEYWORDS = ["salman hafiz", "wordpress developer", "frontend developer", "wordpress frontend development"];
@@ -58,6 +59,53 @@ const AVAILABLE_TOPICS = [
   "Ecommerce",
   "Firebase",
 ];
+
+const AI_PROMPT_SETTINGS_KEY = "admin.ai.prompt.settings";
+
+type AIPromptSettings = {
+  systemPrompt: string;
+  customPrompt: string;
+  audiencePrompt: string;
+  ctaPrompt: string;
+  tonePrompt: string;
+  lengthPreset: LengthPreset;
+  maxTokens: number;
+  temperature: number;
+  improveInstructions: string;
+};
+
+const defaultAIPromptSettings: AIPromptSettings = {
+  systemPrompt: "You are an expert SEO content strategist and senior web engineer.",
+  customPrompt: "",
+  audiencePrompt: "Business owners and clients searching for tech services and modern web solutions.",
+  ctaPrompt: "Invite readers to contact Salman Hafiz for implementation or consultation.",
+  tonePrompt: "Clear, trustworthy, practical, and client-centric with short actionable sections.",
+  lengthPreset: "medium",
+  maxTokens: 12000,
+  temperature: 0.75,
+  improveInstructions: "Strengthen scannability, heading structure, SEO intent, and practical examples.",
+};
+
+const loadPromptSettings = (): AIPromptSettings => {
+  if (typeof window === "undefined") return defaultAIPromptSettings;
+  try {
+    const raw = window.localStorage.getItem(AI_PROMPT_SETTINGS_KEY);
+    if (!raw) return defaultAIPromptSettings;
+    const parsed = JSON.parse(raw) as Partial<AIPromptSettings>;
+    return {
+      ...defaultAIPromptSettings,
+      ...parsed,
+      lengthPreset:
+        parsed.lengthPreset === "short" || parsed.lengthPreset === "medium" || parsed.lengthPreset === "long"
+          ? parsed.lengthPreset
+          : defaultAIPromptSettings.lengthPreset,
+      maxTokens: Math.max(1000, Math.min(16000, Number(parsed.maxTokens ?? defaultAIPromptSettings.maxTokens))),
+      temperature: Math.max(0, Math.min(1.2, Number(parsed.temperature ?? defaultAIPromptSettings.temperature))),
+    };
+  } catch {
+    return defaultAIPromptSettings;
+  }
+};
 
 type GeneratedAIPost = {
   title: string;
@@ -101,6 +149,8 @@ const AdminDashboard = () => {
   const [customTopicInput, setCustomTopicInput] = useState("");
   const [primaryKeyword, setPrimaryKeyword] = useState("Salman Hafiz");
   const [secondaryKeywords, setSecondaryKeywords] = useState("WordPress developer, frontend developer, WordPress frontend development");
+  const [promptSettings, setPromptSettings] = useState<AIPromptSettings>(() => loadPromptSettings());
+  const [improvingPostId, setImprovingPostId] = useState<string | null>(null);
   const deferredSearchQuery = useDeferredValue(searchQuery);
 
   const refreshData = async () => {
@@ -123,6 +173,11 @@ const AdminDashboard = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(AI_PROMPT_SETTINGS_KEY, JSON.stringify(promptSettings));
+  }, [promptSettings]);
+
   const handleSyncFirestore = async () => {
     setSyncingFirestore(true);
     setSyncStatus("");
@@ -138,7 +193,10 @@ const AdminDashboard = () => {
     }
   };
 
-  const getGenerationPayload = (action: "generate" | "health-check") => {
+  const getGenerationPayload = (
+    action: "generate" | "health-check" | "improve-post",
+    extras?: Record<string, unknown>
+  ) => {
     const normalizedSecondary = secondaryKeywords
       .split(",")
       .map((keyword) => keyword.trim())
@@ -154,11 +212,24 @@ const AdminDashboard = () => {
       primaryKeyword: primaryKeyword.trim(),
       secondaryKeywords: normalizedSecondary,
       keywords: keywordSet,
+      systemPrompt: promptSettings.systemPrompt,
+      customPrompt: promptSettings.customPrompt,
+      audiencePrompt: promptSettings.audiencePrompt,
+      ctaPrompt: promptSettings.ctaPrompt,
+      tonePrompt: promptSettings.tonePrompt,
+      lengthPreset: promptSettings.lengthPreset,
+      maxTokens: promptSettings.maxTokens,
+      temperature: promptSettings.temperature,
+      improveInstructions: promptSettings.improveInstructions,
+      ...(extras || {}),
     };
   };
 
-  const generateAIBlogPosts = async (action: "generate" | "health-check") => {
-    const payload = getGenerationPayload(action);
+  const generateAIBlogPosts = async (
+    action: "generate" | "health-check" | "improve-post",
+    extras?: Record<string, unknown>
+  ) => {
+    const payload = getGenerationPayload(action, extras);
 
     const tryEndpoint = async (url: string) => {
       const response = await fetch(url, {
@@ -403,6 +474,98 @@ const AdminDashboard = () => {
     };
   }, [posts, primaryKeyword, secondaryKeywords]);
 
+  const scheduledAIPosts = useMemo(() => {
+    const now = Date.now();
+    return posts
+      .filter((post) => {
+        if (!post.published || !post.publishedAt) return false;
+        if (!post.tags.some((tag) => tag.toLowerCase() === AI_GENERATED_TAG.toLowerCase())) return false;
+        const publishTime = Date.parse(post.publishedAt);
+        return !Number.isNaN(publishTime) && publishTime > now;
+      })
+      .sort((a, b) => Date.parse(a.publishedAt || "") - Date.parse(b.publishedAt || ""));
+  }, [posts]);
+
+  const handleResetPromptSettings = () => {
+    setPromptSettings(defaultAIPromptSettings);
+    setAiStatus("AI prompt profile reset to defaults.");
+  };
+
+  const updateExistingPost = async (post: BlogPost, overrides: Partial<BlogPost>) => {
+    await savePostAsync({
+      id: post.id,
+      title: overrides.title ?? post.title,
+      slug: overrides.slug ?? post.slug,
+      excerpt: overrides.excerpt ?? post.excerpt,
+      content: overrides.content ?? post.content,
+      tags: overrides.tags ?? post.tags,
+      authorName: overrides.authorName ?? post.authorName,
+      featured: overrides.featured ?? post.featured,
+      published: overrides.published ?? post.published,
+      publishedAt: overrides.publishedAt ?? post.publishedAt,
+      metaTitle: overrides.metaTitle ?? post.metaTitle,
+      metaDescription: overrides.metaDescription ?? post.metaDescription,
+    });
+  };
+
+  const handlePublishNow = async (post: BlogPost) => {
+    await updateExistingPost(post, { published: true, publishedAt: new Date().toISOString() });
+    await refreshData();
+    setAiStatus(`Published now: ${post.title}`);
+  };
+
+  const handleShiftSchedule = async (post: BlogPost, days: number) => {
+    const base = post.publishedAt ? new Date(post.publishedAt) : new Date();
+    base.setDate(base.getDate() + days);
+    await updateExistingPost(post, { published: true, publishedAt: base.toISOString() });
+    await refreshData();
+    setAiStatus(`Rescheduled: ${post.title} (${days > 0 ? "+" : ""}${days} days).`);
+  };
+
+  const handleImproveScheduledPost = async (post: BlogPost) => {
+    setImprovingPostId(post.id);
+    setAiStatus(`Improving post: ${post.title} ...`);
+    try {
+      const data = (await generateAIBlogPosts("improve-post", {
+        improvePost: {
+          title: post.title,
+          excerpt: post.excerpt,
+          content: post.content,
+          tags: post.tags,
+          metaTitle: post.metaTitle,
+          metaDescription: post.metaDescription,
+        },
+      })) as { post?: GeneratedAIPost };
+
+      if (!data.post) {
+        throw new Error("AI did not return an improved post.");
+      }
+
+      const normalizedSecondary = secondaryKeywords
+        .split(",")
+        .map((keyword) => keyword.trim())
+        .filter(Boolean);
+
+      await updateExistingPost(post, {
+        title: data.post.title,
+        excerpt: data.post.excerpt,
+        content: data.post.content,
+        tags: Array.from(new Set([...(data.post.tags || []), AI_GENERATED_TAG, ...selectedTopics, primaryKeyword.trim(), ...normalizedSecondary])),
+        metaTitle: data.post.metaTitle || `${data.post.title} | Salman Hafiz`,
+        metaDescription: data.post.metaDescription || data.post.excerpt,
+      });
+
+      await refreshData();
+      setAiStatus(`Improved and updated: ${post.title}`);
+      void trackFirebaseEvent("admin_ai_post_improved", { post_id: post.id, post_slug: post.slug });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown improvement error";
+      setAiStatus(`AI improvement failed: ${message}`);
+    } finally {
+      setImprovingPostId(null);
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -616,6 +779,54 @@ const AdminDashboard = () => {
                   </select>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="text-xs text-muted-foreground space-y-1">
+                    <span>Max Tokens</span>
+                    <input
+                      type="number"
+                      min={1000}
+                      max={16000}
+                      step={500}
+                      value={promptSettings.maxTokens}
+                      onChange={(e) =>
+                        setPromptSettings((prev) => ({
+                          ...prev,
+                          maxTokens: Math.max(1000, Math.min(16000, Number(e.target.value) || prev.maxTokens)),
+                        }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg bg-background/70 border border-border focus:outline-none focus:border-primary text-sm"
+                    />
+                  </label>
+                  <label className="text-xs text-muted-foreground space-y-1">
+                    <span>Temperature ({promptSettings.temperature.toFixed(2)})</span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={1.2}
+                      step={0.05}
+                      value={promptSettings.temperature}
+                      onChange={(e) =>
+                        setPromptSettings((prev) => ({
+                          ...prev,
+                          temperature: Math.max(0, Math.min(1.2, Number(e.target.value))),
+                        }))
+                      }
+                      className="w-full"
+                    />
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs text-muted-foreground">Prompt profile auto-saves in this browser (acts as workflow training guidance).</p>
+                  <button
+                    type="button"
+                    onClick={handleResetPromptSettings}
+                    className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:text-primary"
+                  >
+                    Reset Profile
+                  </button>
+                </div>
+
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">Topic Selection</p>
                   <div className="flex flex-wrap gap-2">
@@ -665,6 +876,64 @@ const AdminDashboard = () => {
                 <p className="text-xs text-muted-foreground">
                   GPT will use this keyword strategy for SEO-friendly titles, headings, and meta descriptions.
                 </p>
+
+                <select
+                  value={promptSettings.lengthPreset}
+                  onChange={(e) =>
+                    setPromptSettings((prev) => ({
+                      ...prev,
+                      lengthPreset: e.target.value as LengthPreset,
+                    }))
+                  }
+                  className="w-full px-3 py-2 rounded-lg bg-background/70 border border-border focus:outline-none focus:border-primary text-sm"
+                >
+                  <option value="short">Length: Short (650-900 words)</option>
+                  <option value="medium">Length: Medium (900-1200 words)</option>
+                  <option value="long">Length: Long (1200-1600 words)</option>
+                </select>
+
+                <textarea
+                  value={promptSettings.systemPrompt}
+                  onChange={(e) => setPromptSettings((prev) => ({ ...prev, systemPrompt: e.target.value }))}
+                  placeholder="System prompt (model role)"
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg bg-background/70 border border-border focus:outline-none focus:border-primary text-sm"
+                />
+                <textarea
+                  value={promptSettings.audiencePrompt}
+                  onChange={(e) => setPromptSettings((prev) => ({ ...prev, audiencePrompt: e.target.value }))}
+                  placeholder="Audience profile"
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg bg-background/70 border border-border focus:outline-none focus:border-primary text-sm"
+                />
+                <textarea
+                  value={promptSettings.tonePrompt}
+                  onChange={(e) => setPromptSettings((prev) => ({ ...prev, tonePrompt: e.target.value }))}
+                  placeholder="Tone and style guidance"
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg bg-background/70 border border-border focus:outline-none focus:border-primary text-sm"
+                />
+                <textarea
+                  value={promptSettings.ctaPrompt}
+                  onChange={(e) => setPromptSettings((prev) => ({ ...prev, ctaPrompt: e.target.value }))}
+                  placeholder="Call-to-action rule"
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg bg-background/70 border border-border focus:outline-none focus:border-primary text-sm"
+                />
+                <textarea
+                  value={promptSettings.customPrompt}
+                  onChange={(e) => setPromptSettings((prev) => ({ ...prev, customPrompt: e.target.value }))}
+                  placeholder="Custom prompt instructions (acts like lightweight training context)"
+                  rows={4}
+                  className="w-full px-3 py-2 rounded-lg bg-background/70 border border-border focus:outline-none focus:border-primary text-sm"
+                />
+                <textarea
+                  value={promptSettings.improveInstructions}
+                  onChange={(e) => setPromptSettings((prev) => ({ ...prev, improveInstructions: e.target.value }))}
+                  placeholder="Improvement instructions for scheduled posts"
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-lg bg-background/70 border border-border focus:outline-none focus:border-primary text-sm"
+                />
               </div>
             </div>
 
@@ -736,6 +1005,67 @@ const AdminDashboard = () => {
                 <p className="text-xs text-muted-foreground font-mono mb-1">AI Workflow Impressions</p>
                 <p className="text-xl font-bold text-neon-purple">{aiMonitor.impressions}</p>
                 <p className="text-xs text-muted-foreground mt-1">Keyword Coverage: {aiMonitor.keywordCoverage} / {aiMonitor.total || 0}</p>
+              </div>
+            </div>
+
+            <div className="mt-4 p-4 rounded-xl border border-border/70 bg-background/40">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <p className="text-sm font-medium text-foreground">Scheduled AI Posts Manager</p>
+                <p className="text-xs text-muted-foreground font-mono">Upcoming AI posts: {scheduledAIPosts.length}</p>
+              </div>
+
+              <div className="space-y-2 max-h-[320px] overflow-auto pr-1">
+                {scheduledAIPosts.map((post) => (
+                  <div key={post.id} className="p-3 rounded-lg border border-border/70 bg-background/60">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm text-foreground font-medium">{post.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1">/{post.slug}</p>
+                        <p className="text-xs text-muted-foreground font-mono mt-1">Publish: {post.publishedAt ? new Date(post.publishedAt).toLocaleString() : "Not scheduled"}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(post)}
+                          className="text-xs px-2.5 py-1 rounded border border-border text-muted-foreground hover:text-primary"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleImproveScheduledPost(post)}
+                          disabled={improvingPostId === post.id}
+                          className="text-xs px-2.5 py-1 rounded border border-primary/40 text-primary hover:bg-primary/10 disabled:opacity-70"
+                        >
+                          {improvingPostId === post.id ? "Improving..." : "Improve with AI"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleShiftSchedule(post, 7)}
+                          className="text-xs px-2.5 py-1 rounded border border-border text-muted-foreground hover:text-primary"
+                        >
+                          +7 Days
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleShiftSchedule(post, -7)}
+                          className="text-xs px-2.5 py-1 rounded border border-border text-muted-foreground hover:text-primary"
+                        >
+                          -7 Days
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handlePublishNow(post)}
+                          className="text-xs px-2.5 py-1 rounded border border-neon-green/40 text-neon-green hover:bg-neon-green/10"
+                        >
+                          Publish Now
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {scheduledAIPosts.length === 0 ? <p className="text-sm text-muted-foreground">No scheduled AI posts found. Generate new posts to fill your queue.</p> : null}
               </div>
             </div>
 
