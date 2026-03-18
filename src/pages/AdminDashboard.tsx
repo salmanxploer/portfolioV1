@@ -195,10 +195,15 @@ const AdminDashboard = () => {
             return await tryEndpoint("http://localhost:3001/api/generate-blog-posts");
           }
         } catch (thirdError) {
-          const firstMessage = firstError instanceof Error ? firstError.message : "Unknown Netlify function error";
-          const secondMessage = secondError instanceof Error ? secondError.message : "Unknown API route error";
-          const thirdMessage = thirdError instanceof Error ? thirdError.message : "Unknown local server error";
-          throw new Error(`${firstMessage} | Fallback failed: ${secondMessage} | Local server failed: ${thirdMessage}`);
+          try {
+            return await tryEndpoint("https://salmanhafiz.me/.netlify/functions/generate-blog-posts");
+          } catch (fourthError) {
+            const firstMessage = firstError instanceof Error ? firstError.message : "Unknown Netlify function error";
+            const secondMessage = secondError instanceof Error ? secondError.message : "Unknown API route error";
+            const thirdMessage = thirdError instanceof Error ? thirdError.message : "Unknown local server error";
+            const fourthMessage = fourthError instanceof Error ? fourthError.message : "Unknown production fallback error";
+            throw new Error(`${firstMessage} | Fallback failed: ${secondMessage} | Local server failed: ${thirdMessage} | Production fallback failed: ${fourthMessage}`);
+          }
         }
 
         const firstMessage = firstError instanceof Error ? firstError.message : "Unknown Netlify function error";

@@ -123,6 +123,40 @@ const safeParsePosts = (raw: string): GeneratedPost[] => {
     .filter((post) => post.title && post.excerpt && post.content);
 };
 
+const shouldRetryWithOpenRouterAuto = (provider: ProviderConfig["provider"], status: number, errorMessage?: string) => {
+  if (provider !== "openrouter") return false;
+  if (status === 404) return true;
+  return String(errorMessage || "").toLowerCase().includes("no endpoints found");
+};
+
+const callProvider = async (
+  providerConfig: ProviderConfig,
+  body: Record<string, unknown>
+): Promise<{ response: Response; data: OpenAIResponse; modelUsed: string }> => {
+  const run = async (model: string) => {
+    const response = await fetch(providerConfig.endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${providerConfig.apiKey}`,
+        ...(providerConfig.extraHeaders || {}),
+      },
+      body: JSON.stringify({ ...body, model }),
+    });
+    const data = (await response.json()) as OpenAIResponse;
+    return { response, data, modelUsed: model };
+  };
+
+  const first = await run(providerConfig.model);
+  if (first.response.ok) return first;
+
+  if (shouldRetryWithOpenRouterAuto(providerConfig.provider, first.response.status, first.data.error?.message)) {
+    return run("openrouter/auto");
+  }
+
+  return first;
+};
+
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -142,27 +176,17 @@ export default async function handler(req: any, res: any) {
     const { provider, apiKey, model, endpoint, extraHeaders } = providerConfig;
 
     if (action === "health-check") {
-      const healthResponse = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-          ...(extraHeaders || {}),
-        },
-        body: JSON.stringify({
-          model,
-          temperature: 0,
-          max_tokens: 10,
-          messages: [{ role: "user", content: "Reply with OK" }],
-        }),
+      const healthCall = await callProvider(providerConfig, {
+        temperature: 0,
+        max_tokens: 10,
+        messages: [{ role: "user", content: "Reply with OK" }],
       });
 
-      const healthData = (await healthResponse.json()) as OpenAIResponse;
-      if (!healthResponse.ok) {
-        return res.status(healthResponse.status).json({ ok: false, error: healthData.error?.message || "GPT health-check failed." });
+      if (!healthCall.response.ok) {
+        return res.status(healthCall.response.status).json({ ok: false, error: healthCall.data.error?.message || "GPT health-check failed." });
       }
 
-      return res.status(200).json({ ok: true, model, provider });
+      return res.status(200).json({ ok: true, model: healthCall.modelUsed, provider });
     }
 
     const count = Math.max(1, Math.min(20, Number(payload.count || 10)));
@@ -177,41 +201,30 @@ export default async function handler(req: any, res: any) {
 
     const prompt = buildPrompt(count, mode, keywords, topics, primaryKeyword, secondaryKeywords);
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-        ...(extraHeaders || {}),
-      },
-      body: JSON.stringify({
-        model,
-        temperature,
-        top_p: 0.95,
-        frequency_penalty: 0.2,
-        presence_penalty: 0.1,
-        max_tokens: maxTokens,
-        response_format: { type: "json_object" },
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert SEO content strategist and senior web engineer.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-      }),
+    const generationCall = await callProvider(providerConfig, {
+      temperature,
+      top_p: 0.95,
+      frequency_penalty: 0.2,
+      presence_penalty: 0.1,
+      max_tokens: maxTokens,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert SEO content strategist and senior web engineer.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
     });
 
-    const data = (await response.json()) as OpenAIResponse;
-
-    if (!response.ok) {
-      return res.status(response.status).json({ error: data.error?.message || "Failed to generate blog posts." });
+    if (!generationCall.response.ok) {
+      return res.status(generationCall.response.status).json({ error: generationCall.data.error?.message || "Failed to generate blog posts." });
     }
 
-    const content = data.choices?.[0]?.message?.content || "";
+    const content = generationCall.data.choices?.[0]?.message?.content || "";
     const posts = safeParsePosts(content);
 
     if (posts.length === 0) {

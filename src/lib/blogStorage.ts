@@ -674,6 +674,15 @@ const isPostLive = (post: BlogPost, now = Date.now()): boolean => {
   if (!post.publishedAt) return true;
   const publishedAtMs = Date.parse(post.publishedAt);
   if (Number.isNaN(publishedAtMs)) return true;
+
+  // Guard against older scheduler data where publishedAt was generated in the past for newly created auto posts.
+  if (post.id.startsWith(AUTO_SCHEDULED_PREFIX)) {
+    const createdAtMs = Date.parse(post.createdAt || "");
+    if (!Number.isNaN(createdAtMs) && publishedAtMs < createdAtMs - 60_000) {
+      return false;
+    }
+  }
+
   return publishedAtMs <= now;
 };
 
