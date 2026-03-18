@@ -486,6 +486,16 @@ const AdminDashboard = () => {
       .sort((a, b) => Date.parse(a.publishedAt || "") - Date.parse(b.publishedAt || ""));
   }, [posts]);
 
+  const allAIPosts = useMemo(() => {
+    return posts
+      .filter((post) => post.tags.some((tag) => tag.toLowerCase() === AI_GENERATED_TAG.toLowerCase()))
+      .sort((a, b) => {
+        const aTime = Date.parse(a.publishedAt || a.createdAt);
+        const bTime = Date.parse(b.publishedAt || b.createdAt);
+        return bTime - aTime;
+      });
+  }, [posts]);
+
   const handleResetPromptSettings = () => {
     setPromptSettings(defaultAIPromptSettings);
     setAiStatus("AI prompt profile reset to defaults.");
@@ -1226,6 +1236,66 @@ const AdminDashboard = () => {
                   <option value="views">Sort: Most Viewed</option>
                   <option value="title">Sort: Title A-Z</option>
                 </select>
+              </div>
+
+              <div className="mb-4 p-4 rounded-xl border border-border/70 bg-background/40">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <p className="text-sm font-medium text-foreground">Next AI Posting Queue</p>
+                  <p className="text-xs text-muted-foreground font-mono">{scheduledAIPosts.length} upcoming</p>
+                </div>
+
+                {scheduledAIPosts.length > 0 ? (
+                  <div className="space-y-2 max-h-48 overflow-auto pr-1">
+                    {scheduledAIPosts.map((post) => (
+                      <div key={`all-upcoming-${post.id}`} className="p-2.5 rounded-lg border border-border/70 bg-background/60">
+                        <p className="text-sm text-foreground font-medium">{post.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Publish: {post.publishedAt ? new Date(post.publishedAt).toLocaleString() : "Not scheduled"}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">No upcoming AI posts right now.</p>
+                )}
+              </div>
+
+              <div className="mb-4 p-4 rounded-xl border border-border/70 bg-background/40">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <p className="text-sm font-medium text-foreground">Full AI Posting Contents</p>
+                  <p className="text-xs text-muted-foreground font-mono">{allAIPosts.length} AI posts</p>
+                </div>
+
+                {allAIPosts.length > 0 ? (
+                  <div className="space-y-2 max-h-64 overflow-auto pr-1">
+                    {allAIPosts.map((post) => (
+                      <details key={`all-ai-${post.id}`} className="p-3 rounded-lg border border-border/70 bg-background/60">
+                        <summary className="cursor-pointer list-none">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm text-foreground font-medium">{post.title}</p>
+                            <p className="text-[11px] text-muted-foreground font-mono">
+                              {post.publishedAt ? new Date(post.publishedAt).toLocaleString() : new Date(post.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">/{post.slug}</p>
+                        </summary>
+                        <div className="mt-3 space-y-2">
+                          <p className="text-xs text-muted-foreground">{post.excerpt}</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {post.tags.map((tag) => (
+                              <span key={`all-ai-tag-${post.id}-${tag}`} className="text-[11px] px-2 py-0.5 rounded-full border border-border/70 text-muted-foreground">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="max-h-56 overflow-auto rounded-lg border border-border/60 bg-background/50 p-3">
+                            <p className="text-xs text-foreground whitespace-pre-wrap break-words leading-relaxed">{post.content}</p>
+                          </div>
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">No AI-generated posts found yet.</p>
+                )}
               </div>
 
               <div className="space-y-3 max-h-[560px] overflow-auto pr-1">
