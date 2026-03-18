@@ -201,9 +201,9 @@ const AdminDashboard = () => {
     setTestingAI(true);
     setAiStatus("");
     try {
-      const data = (await generateAIBlogPosts("health-check")) as { ok?: boolean; model?: string; error?: string };
+      const data = (await generateAIBlogPosts("health-check")) as { ok?: boolean; model?: string; provider?: string; error?: string };
       if (data.ok) {
-        setAiStatus(`GPT API is working. Model: ${data.model || "configured model"}.`);
+        setAiStatus(`AI connection is working. Provider: ${data.provider || "configured"} | Model: ${data.model || "configured model"}.`);
       } else {
         setAiStatus(`GPT API check failed: ${data.error || "Unknown error"}`);
       }

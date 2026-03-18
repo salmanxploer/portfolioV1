@@ -10,6 +10,8 @@ type RequestPayload = {
   topics?: string[];
   primaryKeyword?: string;
   secondaryKeywords?: string[];
+  maxTokens?: number;
+  temperature?: number;
 };
 
 type GeneratedPost = {
@@ -32,8 +34,59 @@ type OpenAIResponse = {
   };
 };
 
+type ProviderConfig = {
+  provider: "openrouter" | "groq" | "openai";
+  apiKey: string;
+  model: string;
+  endpoint: string;
+  extraHeaders?: Record<string, string>;
+};
+
 const DEFAULT_KEYWORDS = ["Salman Hafiz", "WordPress developer", "frontend developer", "WordPress frontend development"];
 const DEFAULT_TOPICS = ["WordPress", "Frontend Development", "AI", "Crypto", "SEO", "Web Performance"];
+const DEFAULT_MAX_TOKENS = 12000;
+const DEFAULT_TEMPERATURE = 0.75;
+
+const resolveProvider = (): ProviderConfig | null => {
+  const preferred = String(process.env.AI_PROVIDER || "").trim().toLowerCase();
+
+  const openRouterKey = process.env.OPENROUTER_API_KEY;
+  const groqKey = process.env.GROQ_API_KEY;
+  const openAiKey = process.env.OPENAI_API_KEY;
+
+  if ((preferred === "openrouter" || !preferred) && openRouterKey) {
+    return {
+      provider: "openrouter",
+      apiKey: openRouterKey,
+      model: process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || "meta-llama/llama-3.1-8b-instruct:free",
+      endpoint: "https://openrouter.ai/api/v1/chat/completions",
+      extraHeaders: {
+        "HTTP-Referer": process.env.SITE_URL || "https://salmanhafiz.me",
+        "X-Title": "Salman Hafiz Portfolio AI Generator",
+      },
+    };
+  }
+
+  if ((preferred === "groq" || (!preferred && !openRouterKey)) && groqKey) {
+    return {
+      provider: "groq",
+      apiKey: groqKey,
+      model: process.env.GROQ_MODEL || process.env.OPENAI_MODEL || "llama-3.1-8b-instant",
+      endpoint: "https://api.groq.com/openai/v1/chat/completions",
+    };
+  }
+
+  if ((preferred === "openai" || !preferred) && openAiKey) {
+    return {
+      provider: "openai",
+      apiKey: openAiKey,
+      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      endpoint: "https://api.openai.com/v1/chat/completions",
+    };
+  }
+
+  return null;
+};
 
 const buildPrompt = (count: number, mode: GenerationMode, keywords: string[], topics: string[], primaryKeyword: string, secondaryKeywords: string[]) => {
   return [
@@ -46,6 +99,7 @@ const buildPrompt = (count: number, mode: GenerationMode, keywords: string[], to
     `Required keywords to naturally include in every post: ${keywords.join(", ")}.`,
     "Each post must be tech related and recent-topic oriented (2025-2026 relevance), especially around the selected topic pool.",
     "Each post should include practical implementation advice and clear business outcomes.",
+    "Each content body should be detailed and long-form, approximately 900-1400 words.",
     "SEO rules: unique title per post, scannable headings, natural keyword placement, semantic variations, and intent-aligned CTA.",
     "Meta title should be 50-60 chars when possible, meta description 140-160 chars when possible.",
     "Return ONLY valid JSON with this exact shape:",
@@ -94,13 +148,14 @@ export const handler: Handler = async (event: HandlerEvent) => {
     };
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
+  const providerConfig = resolveProvider();
+  if (!providerConfig) {
     return {
       statusCode: 500,
       headers: corsHeaders,
       body: JSON.stringify({
-        error: "OPENAI_API_KEY is not configured on the server.",
+        error:
+          "No AI provider key configured. Set OPENROUTER_API_KEY (free), GROQ_API_KEY (free tier), or OPENAI_API_KEY.",
       }),
     };
   }
@@ -109,14 +164,15 @@ export const handler: Handler = async (event: HandlerEvent) => {
     const payload = (event.body ? JSON.parse(event.body) : {}) as RequestPayload;
     const action = payload.action || "generate";
 
-    const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+    const { provider, apiKey, model, endpoint, extraHeaders } = providerConfig;
 
     if (action === "health-check") {
-      const healthResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      const healthResponse = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
+          ...(extraHeaders || {}),
         },
         body: JSON.stringify({
           model,
@@ -138,7 +194,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
       return {
         statusCode: 200,
         headers: corsHeaders,
-        body: JSON.stringify({ ok: true, model }),
+        body: JSON.stringify({ ok: true, model, provider }),
       };
     }
 
@@ -149,18 +205,26 @@ export const handler: Handler = async (event: HandlerEvent) => {
     const primaryKeyword = String(payload.primaryKeyword || keywords[0] || "Salman Hafiz").trim();
     const secondaryKeywords =
       Array.isArray(payload.secondaryKeywords) && payload.secondaryKeywords.length > 0 ? payload.secondaryKeywords : keywords.slice(1);
+    const maxTokens = Math.max(1000, Math.min(16000, Number(payload.maxTokens || process.env.AI_MAX_TOKENS || DEFAULT_MAX_TOKENS)));
+    const temperature = Math.max(0, Math.min(1.2, Number(payload.temperature ?? process.env.AI_TEMPERATURE ?? DEFAULT_TEMPERATURE)));
 
     const prompt = buildPrompt(count, mode, keywords, topics, primaryKeyword, secondaryKeywords);
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
+        ...(extraHeaders || {}),
       },
       body: JSON.stringify({
         model,
-        temperature: 0.8,
+        temperature,
+        top_p: 0.95,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.1,
+        max_tokens: maxTokens,
+        response_format: { type: "json_object" },
         messages: [
           {
             role: "system",
