@@ -190,9 +190,20 @@ const AdminDashboard = () => {
       try {
         return await tryEndpoint("/api/generate-blog-posts");
       } catch (secondError) {
+        try {
+          if (typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+            return await tryEndpoint("http://localhost:3001/api/generate-blog-posts");
+          }
+        } catch (thirdError) {
+          const firstMessage = firstError instanceof Error ? firstError.message : "Unknown Netlify function error";
+          const secondMessage = secondError instanceof Error ? secondError.message : "Unknown API route error";
+          const thirdMessage = thirdError instanceof Error ? thirdError.message : "Unknown local server error";
+          throw new Error(`${firstMessage} | Fallback failed: ${secondMessage} | Local server failed: ${thirdMessage}`);
+        }
+
         const firstMessage = firstError instanceof Error ? firstError.message : "Unknown Netlify function error";
         const secondMessage = secondError instanceof Error ? secondError.message : "Unknown API route error";
-        throw new Error(`${firstMessage} | Fallback failed: ${secondMessage}`);
+        throw new Error(`${firstMessage} | Fallback failed: ${secondMessage}. If local, run both: npm run server and npm run dev.`);
       }
     }
   };
