@@ -52,7 +52,16 @@ const resolveProvider = (): ProviderConfig | null => {
   const groqKey = process.env.GROQ_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
 
-  if ((preferred === "openrouter" || !preferred) && openRouterKey) {
+  if (preferred === "groq" && groqKey) {
+    return {
+      provider: "groq",
+      apiKey: groqKey,
+      model: process.env.GROQ_MODEL || process.env.OPENAI_MODEL || "llama-3.1-8b-instant",
+      endpoint: "https://api.groq.com/openai/v1/chat/completions",
+    };
+  }
+
+  if (preferred === "openrouter" && openRouterKey) {
     return {
       provider: "openrouter",
       apiKey: openRouterKey,
@@ -65,7 +74,16 @@ const resolveProvider = (): ProviderConfig | null => {
     };
   }
 
-  if ((preferred === "groq" || (!preferred && !openRouterKey)) && groqKey) {
+  if (preferred === "openai" && openAiKey) {
+    return {
+      provider: "openai",
+      apiKey: openAiKey,
+      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      endpoint: "https://api.openai.com/v1/chat/completions",
+    };
+  }
+
+  if (!preferred && groqKey) {
     return {
       provider: "groq",
       apiKey: groqKey,
@@ -74,7 +92,20 @@ const resolveProvider = (): ProviderConfig | null => {
     };
   }
 
-  if ((preferred === "openai" || !preferred) && openAiKey) {
+  if (!preferred && openRouterKey) {
+    return {
+      provider: "openrouter",
+      apiKey: openRouterKey,
+      model: process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || "openrouter/auto",
+      endpoint: "https://openrouter.ai/api/v1/chat/completions",
+      extraHeaders: {
+        "HTTP-Referer": process.env.SITE_URL || "https://salmanhafiz.me",
+        "X-Title": "Salman Hafiz Portfolio AI Generator",
+      },
+    };
+  }
+
+  if (!preferred && openAiKey) {
     return {
       provider: "openai",
       apiKey: openAiKey,
