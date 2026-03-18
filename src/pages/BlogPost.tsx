@@ -7,6 +7,40 @@ import { getPostBySlug, getPostsByTag, incrementPostViewAsync } from "@/lib/blog
 import { trackFirebaseEvent } from "@/lib/firebase";
 import type { BlogPost as BlogPostType } from "@/types/blog";
 
+type ContentBlock =
+  | { type: "h2"; text: string }
+  | { type: "h3"; text: string }
+  | { type: "ordered-item"; text: string; number: string }
+  | { type: "unordered-item"; text: string }
+  | { type: "paragraph"; text: string };
+
+const parseContentBlocks = (content: string): ContentBlock[] => {
+  return content
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      if (line.startsWith("## ")) {
+        return { type: "h3", text: line.slice(3).trim() } as ContentBlock;
+      }
+      if (line.startsWith("# ")) {
+        return { type: "h2", text: line.slice(2).trim() } as ContentBlock;
+      }
+      if (/^\d+\.\s+/.test(line)) {
+        const match = line.match(/^(\d+)\.\s+(.*)$/);
+        return {
+          type: "ordered-item",
+          number: match?.[1] || "1",
+          text: match?.[2]?.trim() || line,
+        } as ContentBlock;
+      }
+      if (line.startsWith("- ") || line.startsWith("* ")) {
+        return { type: "unordered-item", text: line.slice(2).trim() } as ContentBlock;
+      }
+      return { type: "paragraph", text: line } as ContentBlock;
+    });
+};
+
 const BlogPost = () => {
   const { slug = "" } = useParams();
   const [post, setPost] = useState<BlogPostType | undefined>(undefined);
@@ -105,8 +139,42 @@ const BlogPost = () => {
             ))}
           </div>
 
-          <div className="prose prose-invert max-w-none text-foreground/90 leading-relaxed whitespace-pre-line">
-            {post.content}
+          <div className="prose prose-invert max-w-none text-foreground/90 leading-relaxed">
+            {parseContentBlocks(post.content).map((block, idx) => {
+              if (block.type === "h2") {
+                return (
+                  <h2 key={`block-${idx}`} className="text-2xl md:text-3xl font-semibold mt-8 mb-3 text-foreground">
+                    {block.text}
+                  </h2>
+                );
+              }
+              if (block.type === "h3") {
+                return (
+                  <h3 key={`block-${idx}`} className="text-xl md:text-2xl font-semibold mt-6 mb-2 text-foreground/95">
+                    {block.text}
+                  </h3>
+                );
+              }
+              if (block.type === "ordered-item") {
+                return (
+                  <p key={`block-${idx}`} className="pl-4 border-l border-border/60 mb-2 text-foreground/90">
+                    {block.number}. {block.text}
+                  </p>
+                );
+              }
+              if (block.type === "unordered-item") {
+                return (
+                  <p key={`block-${idx}`} className="pl-4 border-l border-border/60 mb-2 text-foreground/90">
+                    - {block.text}
+                  </p>
+                );
+              }
+              return (
+                <p key={`block-${idx}`} className="mb-4 text-foreground/90">
+                  {block.text}
+                </p>
+              );
+            })}
           </div>
 
           {relatedPosts.length > 0 ? (
