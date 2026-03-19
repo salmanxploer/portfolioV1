@@ -85,7 +85,7 @@ const BlogPost = () => {
           <div className="max-w-4xl mx-auto relative z-10">
             <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg border border-primary/30 bg-card/60 backdrop-blur-sm mb-8">
               <span className="w-3 h-3 rounded-full bg-primary animate-pulse" />
-              <span className="text-xs font-mono text-primary">Loading single post...</span>
+              <span className="text-xs font-mono text-primary">Loading blog post...</span>
             </div>
 
             <div className="p-6 md:p-8 rounded-2xl border border-border bg-card/70 backdrop-blur-sm animate-pulse">

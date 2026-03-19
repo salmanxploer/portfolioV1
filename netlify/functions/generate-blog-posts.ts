@@ -58,6 +58,42 @@ const DEFAULT_TEMPERATURE = 0.75;
 const DEFAULT_SYSTEM_PROMPT = "You are an expert SEO content strategist and senior web engineer.";
 const DEFAULT_AUDIENCE_PROMPT = "Business owners and clients searching for tech services and modern web solutions.";
 const DEFAULT_CTA_PROMPT = "Invite the reader to discuss or hire Salman Hafiz for implementation.";
+const DEFAULT_SITE_URL = "https://salmanhafiz.me";
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 12;
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+const getAllowedOrigins = () => {
+  const configured = String(process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const siteUrl = String(process.env.SITE_URL || DEFAULT_SITE_URL).trim();
+  return Array.from(new Set([siteUrl, DEFAULT_SITE_URL, ...configured]));
+};
+
+const isAllowedOrigin = (origin: string, allowedOrigins: string[]) => {
+  if (!origin) return true;
+  return allowedOrigins.includes(origin);
+};
+
+const checkRateLimit = (key: string) => {
+  const now = Date.now();
+  const current = rateLimitStore.get(key);
+
+  if (!current || current.resetAt <= now) {
+    rateLimitStore.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+
+  if (current.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+
+  current.count += 1;
+  rateLimitStore.set(key, current);
+  return true;
+};
 
 const getLengthInstruction = (lengthPreset: "short" | "medium" | "long") => {
   if (lengthPreset === "short") return "Target 650-900 words with concise sections and direct implementation advice.";
@@ -301,11 +337,27 @@ const callProvider = async (
 };
 
 export const handler: Handler = async (event: HandlerEvent) => {
+  const origin = String(event.headers.origin || "");
+  const allowedOrigins = getAllowedOrigins();
+  const allowOrigin = allowedOrigins[0] || DEFAULT_SITE_URL;
   const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
+
+  if (origin) {
+    corsHeaders["Access-Control-Allow-Origin"] = origin;
+    corsHeaders["Vary"] = "Origin";
+  }
+
+  if (!isAllowedOrigin(origin, allowedOrigins)) {
+    return {
+      statusCode: 403,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: "Origin not allowed" }),
+    };
+  }
 
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -320,6 +372,15 @@ export const handler: Handler = async (event: HandlerEvent) => {
       statusCode: 405,
       headers: corsHeaders,
       body: JSON.stringify({ error: "Method not allowed" }),
+    };
+  }
+
+  const ip = String(event.headers["x-nf-client-connection-ip"] || event.headers["x-forwarded-for"] || "unknown");
+  if (!checkRateLimit(`generate:${ip}`)) {
+    return {
+      statusCode: 429,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: "Too many requests" }),
     };
   }
 
@@ -501,11 +562,10 @@ export const handler: Handler = async (event: HandlerEvent) => {
       body: JSON.stringify({ posts }),
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown generation error";
     return {
       statusCode: 500,
       headers: corsHeaders,
-      body: JSON.stringify({ error: message }),
+      body: JSON.stringify({ error: "Generation service unavailable" }),
     };
   }
 };

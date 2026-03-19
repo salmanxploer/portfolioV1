@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import PageLoader from "@/components/PageLoader";
 import GlobalCursor from "@/components/GlobalCursor";
@@ -16,6 +16,7 @@ const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const StudyHub = lazy(() => import("./pages/StudyHub"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 
@@ -28,20 +29,27 @@ const queryClient = new QueryClient({
   },
 });
 
+const RouteScopedFloatingWhatsApp = () => {
+  const location = useLocation();
+  if (location.pathname !== "/") return null;
+  return <FloatingWhatsApp />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <GlobalCursor />
-      <FloatingWhatsApp />
       <BrowserRouter>
         <AnalyticsTracker />
+        <RouteScopedFloatingWhatsApp />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/study" element={<StudyHub />} />
             <Route path={`/${ADMIN_BASE_PATH}`} element={<AdminLogin />} />
             <Route
               path={ADMIN_DASHBOARD_PATH}

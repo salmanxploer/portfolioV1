@@ -1031,9 +1031,12 @@ const AdminDashboard = () => {
                       <div>
                         <p className="text-sm text-foreground font-medium">{post.title}</p>
                         <p className="text-xs text-muted-foreground mt-1">/{post.slug}</p>
-                        <p className="text-xs text-muted-foreground font-mono mt-1">Publish: {post.publishedAt ? new Date(post.publishedAt).toLocaleString() : "Not scheduled"}</p>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-col items-end gap-2">
+                        <p className="text-xs text-muted-foreground font-mono">
+                          Publish: {post.publishedAt ? new Date(post.publishedAt).toLocaleString() : "Not scheduled"}
+                        </p>
+                        <div className="flex flex-wrap justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => handleEdit(post)}
@@ -1070,6 +1073,15 @@ const AdminDashboard = () => {
                         >
                           Publish Now
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleDelete(post.id)}
+                          className="text-xs px-2.5 py-1 rounded border border-red-500/40 text-red-400 inline-flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Delete
+                        </button>
+                        </div>
                       </div>
                     </div>
                   </div>

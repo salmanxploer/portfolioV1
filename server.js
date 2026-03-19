@@ -7,11 +7,63 @@ dotenv.config();
 
 const app = express();
 const PORT = 3001;
+const DEFAULT_SITE_URL = 'https://salmanhafiz.me';
 
-app.use(cors());
+const allowedOrigins = Array.from(
+  new Set(
+    [
+      process.env.SITE_URL || DEFAULT_SITE_URL,
+      DEFAULT_SITE_URL,
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      ...String(process.env.ALLOWED_ORIGINS || '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ].filter(Boolean)
+  )
+);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  return allowedOrigins.includes(origin);
+};
+
+const createRateLimiter = (prefix, maxRequests, windowMs) => {
+  const store = new Map();
+  return (req, res, next) => {
+    const ip = String(req.headers['x-forwarded-for'] || req.ip || 'unknown');
+    const key = `${prefix}:${ip}`;
+    const now = Date.now();
+    const current = store.get(key);
+
+    if (!current || current.resetAt <= now) {
+      store.set(key, { count: 1, resetAt: now + windowMs });
+      return next();
+    }
+
+    if (current.count >= maxRequests) {
+      return res.status(429).json({ error: 'Too many requests' });
+    }
+
+    current.count += 1;
+    store.set(key, current);
+    return next();
+  };
+};
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) return callback(null, true);
+      return callback(new Error('Origin not allowed by CORS'));
+    },
+  })
+);
 app.use(express.json());
 
-const resend = new Resend(process.env.VITE_RESEND_API_KEY);
+const resendApiKey = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 const DEFAULT_KEYWORDS = ["Salman Hafiz", "WordPress developer", "frontend developer", "WordPress frontend development"];
 const DEFAULT_TOPICS = ["WordPress", "Frontend Development", "AI", "Crypto", "SEO", "Web Performance"];
@@ -207,7 +259,106 @@ const safeParseSinglePost = (raw) => {
   return normalized;
 };
 
+const shouldRetryWithOpenRouterAuto = (provider, status, errorMessage) => {
+  if (provider !== "openrouter") return false;
+  if (status === 404) return true;
+  return String(errorMessage || "").toLowerCase().includes("no endpoints found");
+};
+
+const callProvider = async (providerConfig, body) => {
+  const run = async (model) => {
+    const response = await fetch(providerConfig.endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${providerConfig.apiKey}`,
+        ...(providerConfig.extraHeaders || {}),
+      },
+      body: JSON.stringify({ ...body, model }),
+    });
+    const data = await response.json();
+    return { response, data, modelUsed: model };
+  };
+
+  const first = await run(providerConfig.model);
+  if (first.response.ok) return first;
+  if (shouldRetryWithOpenRouterAuto(providerConfig.provider, first.response.status, first.data?.error?.message)) {
+    return run("openrouter/auto");
+  }
+  return first;
+};
+
+app.use('/api/chat-assistant', createRateLimiter('chat', 24, 60_000));
+app.use('/api/send-email', createRateLimiter('email', 8, 60_000));
+app.use('/api/generate-blog-posts', createRateLimiter('generate', 12, 60_000));
+
+app.post('/api/chat-assistant', async (req, res) => {
+  if (!isAllowedOrigin(req.headers.origin)) {
+    return res.status(403).json({ error: 'Origin not allowed' });
+  }
+  const providerConfig = resolveProvider();
+  if (!providerConfig) {
+    return res.status(500).json({ error: 'No AI provider configured for assistant chat.' });
+  }
+
+  try {
+    const payload = req.body || {};
+    const message = String(payload.message || '').trim();
+    if (!message) {
+      return res.status(400).json({ error: 'Missing message' });
+    }
+
+    const history = Array.isArray(payload.history)
+      ? payload.history
+          .map((entry) => {
+            const role = String(entry.role || '').toLowerCase();
+            const content = String(entry.text || entry.content || '').trim();
+            if (!content) return null;
+            if (role === 'assistant' || role === 'bot') return { role: 'assistant', content };
+            if (role === 'user') return { role: 'user', content };
+            return null;
+          })
+          .filter(Boolean)
+          .slice(-10)
+      : [];
+
+    const aiCall = await callProvider(providerConfig, {
+      temperature: 0.5,
+      top_p: 0.9,
+      max_tokens: 550,
+      messages: [
+        {
+          role: 'system',
+          content:
+            "You are Salman Assist AI, buyer assistant for Salman Hafiz's portfolio. Keep responses positive, factual, practical, and suggest WhatsApp contact when relevant.",
+        },
+        ...history,
+        { role: 'user', content: message },
+      ],
+    });
+
+    if (!aiCall.response.ok) {
+      return res.status(aiCall.response.status).json({ error: aiCall.data?.error?.message || 'Assistant response failed.' });
+    }
+
+    const reply = String(aiCall.data?.choices?.[0]?.message?.content || '').trim();
+    if (!reply) {
+      return res.status(422).json({ error: 'Empty assistant response.' });
+    }
+
+    return res.status(200).json({ ok: true, reply, provider: providerConfig.provider, model: aiCall.modelUsed });
+  } catch (error) {
+    return res.status(500).json({ error: 'Assistant service unavailable' });
+  }
+});
+
 app.post('/api/send-email', async (req, res) => {
+  if (!isAllowedOrigin(req.headers.origin)) {
+    return res.status(403).json({ error: 'Origin not allowed' });
+  }
+  if (!resend) {
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
   const { name, email, project } = req.body;
 
   if (!name || !email || !project) {
@@ -232,11 +383,14 @@ app.post('/api/send-email', async (req, res) => {
     return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error('Resend error:', error);
-    return res.status(500).json({ error: 'Failed to send email', details: error.message });
+    return res.status(500).json({ error: 'Failed to send email' });
   }
 });
 
 app.post('/api/generate-blog-posts', async (req, res) => {
+  if (!isAllowedOrigin(req.headers.origin)) {
+    return res.status(403).json({ error: 'Origin not allowed' });
+  }
   const providerConfig = resolveProvider();
   if (!providerConfig) {
     return res.status(500).json({
@@ -387,7 +541,7 @@ app.post('/api/generate-blog-posts', async (req, res) => {
 
     return res.status(200).json({ posts });
   } catch (error) {
-    return res.status(500).json({ error: error?.message || 'Unknown generation error' });
+    return res.status(500).json({ error: 'Generation service unavailable' });
   }
 });
 

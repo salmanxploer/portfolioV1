@@ -169,6 +169,9 @@ const services: Service[] = [
   },
 ];
 
+const WAVE_PATH_A = "M20 90 C110 20, 190 120, 280 60 S450 20, 540 75 S710 130, 880 42";
+const WAVE_PATH_B = "M20 105 C140 155, 220 35, 320 85 S510 145, 600 70 S770 28, 880 108";
+
 const ServicesSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -182,18 +185,6 @@ const ServicesSection = () => {
     if (!sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      gsap.from(".services-heading", {
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%",
-          once: true,
-        },
-      });
-
       cardRefs.current.forEach((card) => {
         if (!card) return;
         gsap.fromTo(
@@ -212,23 +203,6 @@ const ServicesSection = () => {
             },
           }
         );
-      });
-
-      const paths = gsap.utils.toArray<SVGPathElement>(".motion-path");
-      paths.forEach((path, index) => {
-        const length = path.getTotalLength();
-        gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
-        gsap.to(path, {
-          strokeDashoffset: 0,
-          duration: 1.3,
-          delay: index * 0.12,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 70%",
-            once: true,
-          },
-        });
       });
     }, sectionRef);
 
@@ -259,10 +233,9 @@ const ServicesSection = () => {
         {/* Enhanced Section header */}
         <motion.div
           className="services-heading text-center mb-20"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6 }}
+          initial={false}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
         >
           <div className="inline-block mb-4">
             <p className="text-sm font-mono text-primary/90 tracking-wider bg-primary/10 px-4 py-1.5 rounded-full border border-primary/30">
@@ -279,9 +252,53 @@ const ServicesSection = () => {
 
           <div className="max-w-4xl mx-auto rounded-2xl border border-border/70 bg-card/50 backdrop-blur-xl p-4 md:p-5 shadow-[0_10px_30px_hsl(228_30%_6%/0.45)]">
             <svg viewBox="0 0 900 140" className="w-full h-28 md:h-32" role="img" aria-label="Animated motion waveform">
-              <path className="motion-path" d="M20 90 C110 20, 190 120, 280 60 S450 20, 540 75 S710 130, 880 42" stroke="hsl(192 92% 66%)" strokeWidth="4" fill="none" strokeLinecap="round" />
-              <path className="motion-path" d="M20 105 C140 155, 220 35, 320 85 S510 145, 600 70 S770 28, 880 108" stroke="hsl(266 85% 73%)" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.9" />
-              <circle className="motion-path" cx="450" cy="70" r="8" fill="hsl(328 88% 74%)" />
+              <defs>
+                <linearGradient id="waveA" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="hsl(192 92% 66%)" stopOpacity="0.1" />
+                  <stop offset="50%" stopColor="hsl(192 92% 66%)" stopOpacity="1" />
+                  <stop offset="100%" stopColor="hsl(192 92% 66%)" stopOpacity="0.1" />
+                </linearGradient>
+                <linearGradient id="waveB" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="hsl(266 85% 73%)" stopOpacity="0.1" />
+                  <stop offset="50%" stopColor="hsl(266 85% 73%)" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="hsl(266 85% 73%)" stopOpacity="0.1" />
+                </linearGradient>
+              </defs>
+
+              <path d={WAVE_PATH_A} stroke="hsl(192 92% 66% / 0.2)" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+              <path d={WAVE_PATH_B} stroke="hsl(266 85% 73% / 0.22)" strokeWidth="2.8" fill="none" strokeLinecap="round" />
+
+              <motion.path
+                d={WAVE_PATH_A}
+                pathLength={1}
+                stroke="url(#waveA)"
+                strokeWidth="4"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray="0.24 0.76"
+                animate={{ strokeDashoffset: [0, -1] }}
+                transition={{ duration: 5.2, repeat: Infinity, ease: "linear" }}
+              />
+              <motion.path
+                d={WAVE_PATH_B}
+                pathLength={1}
+                stroke="url(#waveB)"
+                strokeWidth="3"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray="0.22 0.78"
+                animate={{ strokeDashoffset: [0, 1] }}
+                transition={{ duration: 6.6, repeat: Infinity, ease: "linear" }}
+              />
+
+              <motion.circle
+                cx="450"
+                cy="70"
+                r="8"
+                fill="hsl(328 88% 74%)"
+                animate={{ x: [-18, 18, -18], opacity: [0.65, 1, 0.65] }}
+                transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+              />
             </svg>
           </div>
         </motion.div>
