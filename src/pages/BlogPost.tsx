@@ -10,6 +10,8 @@ import type { BlogPost as BlogPostType } from "@/types/blog";
 type ContentBlock =
   | { type: "h2"; text: string }
   | { type: "h3"; text: string }
+  | { type: "h4"; text: string }
+  | { type: "h5"; text: string }
   | { type: "ordered-item"; text: string; number: string }
   | { type: "unordered-item"; text: string }
   | { type: "paragraph"; text: string };
@@ -20,6 +22,12 @@ const parseContentBlocks = (content: string): ContentBlock[] => {
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => {
+      if (line.startsWith("#### ")) {
+        return { type: "h5", text: line.slice(5).trim() } as ContentBlock;
+      }
+      if (line.startsWith("### ")) {
+        return { type: "h4", text: line.slice(4).trim() } as ContentBlock;
+      }
       if (line.startsWith("## ")) {
         return { type: "h3", text: line.slice(3).trim() } as ContentBlock;
       }
@@ -183,6 +191,20 @@ const BlogPost = () => {
                   <h3 key={`block-${idx}`} className="text-xl md:text-2xl font-semibold mt-6 mb-2 text-foreground/95">
                     {block.text}
                   </h3>
+                );
+              }
+              if (block.type === "h4") {
+                return (
+                  <h4 key={`block-${idx}`} className="text-lg md:text-xl font-semibold mt-5 mb-2 text-foreground/95">
+                    {block.text}
+                  </h4>
+                );
+              }
+              if (block.type === "h5") {
+                return (
+                  <h5 key={`block-${idx}`} className="text-base md:text-lg font-semibold mt-4 mb-2 text-foreground/90">
+                    {block.text}
+                  </h5>
                 );
               }
               if (block.type === "ordered-item") {
